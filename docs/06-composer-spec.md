@@ -82,8 +82,7 @@ the version (`composer_v1` → `composer_v2`), which changes every input hash an
    "lead with the finding and its source, connect it to one fact about this merchant, offer to turn it into
    something usable"; performance → "state the number and the window, give the likely driver only if a fact
    names it, one concrete fix"; customer → "name, why now, the real slot/price, no pressure".
-6. **Output contract**: the JSON schema below; `rationale` ≤ 40 words naming the trigger, the primary fact and
-   the lever.
+6. **Output contract**: the JSON schema below (three prose fields).
 
 User content = the rendered fact sheet (§2.3) + prior bodies sent to this merchant ("do not reuse their
 phrasing") + for repairs, the violation list.
@@ -112,16 +111,16 @@ Effort (`output_config.effort`) is measured in M4 (`low` vs default) and fixed i
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["opener", "middle", "ask", "rationale"],
+  "required": ["opener", "middle", "ask"],
   "properties": {
     "opener":    { "type": "string", "description": "Salutation only, e.g. 'Dr. Meera,' or 'Hi Priya 👋'" },
     "middle":    { "type": "string", "description": "1-3 sentences: why now + the primary fact + support. No question." },
-    "ask":       { "type": "string", "description": "Exactly one sentence, the only call to action." },
-    "rationale": { "type": "string", "description": "<= 40 words: trigger, primary fact, lever." }
+    "ask":       { "type": "string", "description": "Exactly one sentence, the only call to action." }
   }
 }
 ```
-Code then sets: `body = opener + " " + middle + " " + ask` (whitespace-normalised), `template_params =
+The rationale is built in code from the decision (trigger, primary signal, levers, CTA, language), so it always
+matches the body and costs no output tokens. Code then sets: `body = opener + " " + middle + " " + ask` (whitespace-normalised), `template_params =
 [opener, middle, ask]`, `template_name` and `cta` from the decision, `send_as`, `suppression_key`. The template
 for every `template_name` is `{{1}} {{2}} {{3}}`, so params always render to the body.
 

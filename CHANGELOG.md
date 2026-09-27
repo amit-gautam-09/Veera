@@ -4,6 +4,10 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M4 LLM composer: `AnthropicGateway` (Sonnet 5, thinking disabled, structured output, no retries,
+  concurrency cap), `composer_v1` prompt, content-hashed persistent cache, single-flight precompute on trigger
+  push and on dependent version bumps, drop-sentence and one-call repair before the deterministic fallback;
+  fake-gateway tests and tick latency tests.
 - M3 deterministic composer: fact sheet with allowed-token index, per-kind playbook for all 26 kinds
   + generic handler (thin-payload, mismatch, consent and approval rules), validator V1–V17, English and Hinglish
   grounded wording; golden set of 38 snapshot-reviewed cases and unit tests for numbers, validator, salutation,

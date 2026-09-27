@@ -10,7 +10,8 @@ at the mercy of a sampling-free but still non-deterministic generator.
 ## Decision
 Deterministic code builds the fact sheet, picks the family, primary signal, supporting facts, levers, CTA,
 `send_as`, template name and language (the playbook registry, 07). The LLM returns only
-`{opener, middle, ask, rationale}`. Code assembles `body` and `template_params = [opener, middle, ask]` against
+`{opener, middle, ask}`; the rationale is generated in code from the decision (M4 change: it always matches the
+body and saves output tokens). Code assembles `body` and `template_params = [opener, middle, ask]` against
 the template `{{1}} {{2}} {{3}}`. The earlier idea of returning `used_fact_ids` was dropped: the validator traces
 every token directly, which is stricter and cheaper.
 

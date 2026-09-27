@@ -54,13 +54,14 @@ Depends on M1 approval.
   opt-out skips)
 
 ## M4 — LLM composer, repair loop, cache, precompute (`feat/m4-llm-composer`)
-- [ ] `llm/gateway.py` (AsyncAnthropic, `max_retries=0`, semaphore, error mapping, token logging)
-- [ ] `compose/prompts/composer_v1.txt`, `compose/composer.py` (structured output, thinking disabled)
-- [ ] Drop-sentence → repair → fallback ladder; rationale rebuild on body change
-- [ ] `compose/cache.py`: canonical hashing, persistent cache, precompute task registry, re-schedule on
-      dependent version bumps
-- [ ] Measure effort `low` vs default: latency p50/p99 and golden-set judge scores; record in CHANGELOG
+- [x] `llm/gateway.py` (AsyncAnthropic, `max_retries=0`, semaphore, error mapping, token logging)
+- [x] `compose/prompts.py` (`composer_v1`), `compose/composer.py` (structured output, thinking disabled)
+- [x] Drop-sentence → repair → fallback ladder; rationale always built in code
+- [x] Canonical content hashing, persistent cache, single-flight precompute tasks, re-schedule on dependent
+      version bumps (inside `compose/composer.py`; no separate module needed)
+- [ ] Measure effort `low` vs default with a real key: latency p50/p99 and golden-set judge scores (pending API key)
 - **Accept**: p99 tick < 8 s for 20 triggers cold, < 500 ms warm; zero validator escapes on the golden set.
+  ✅ with a fake LLM (tests/perf); real-model latency to be measured once a key is available.
 
 ## M5 — Tick planner (`feat/m5-planner`)
 - [ ] `planner/tick.py`: resolve (listed only), guards with logged reasons, ranking, per-merchant cap, ≤ 20,

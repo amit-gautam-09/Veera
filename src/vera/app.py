@@ -59,9 +59,16 @@ def build_store(settings: Settings) -> Store:
 
 def _default_components(store: Store, settings: Settings) -> tuple[Composer, ReplyHandler]:
     from vera.compose.composer import Composer as PipelineComposer
+    from vera.llm.gateway import AnthropicGateway
     from vera.reply.stub import StubReplyHandler
 
-    return PipelineComposer(store), StubReplyHandler(store)
+    gateway = None
+    if settings.llm_active and settings.anthropic_api_key:
+        gateway = AnthropicGateway(
+            settings.anthropic_api_key, settings.composer_model, settings.llm_max_concurrency, settings.llm_effort
+        )
+    composer = PipelineComposer(store, gateway, settings.repair_min_remaining_s, settings.llm_timeout_s)
+    return composer, StubReplyHandler(store)
 
 
 def create_app(

@@ -211,7 +211,7 @@ a merchant-facing approval message (`vera_customer_approval_v1`) built from payl
   category, family-specific instructions) + user content (fact sheet rendered as labelled lines, decision,
   language directive, prior bodies to this merchant for anti-repetition).
 - Output via structured outputs (`output_config.format` with a JSON schema):
-  `{opener, middle, ask, rationale}`. Code assembles `body = f"{opener} {middle} {ask}"`,
+  `{opener, middle, ask}` (rationale is built in code from the decision). Code assembles `body = f"{opener} {middle} {ask}"`,
   `template_params = [opener, middle, ask]`, and sets `template_name` and `cta` from the decision.
 - Request settings: `model=VERA_COMPOSER_MODEL`, `thinking={"type": "disabled"}` (Sonnet 5 otherwise runs
   adaptive thinking and adds latency), no sampling parameters (rejected with 400 on Sonnet 5), `max_tokens`

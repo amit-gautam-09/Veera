@@ -40,6 +40,7 @@ class Settings:
     composer_model: str = DEFAULT_COMPOSER_MODEL
     llm_max_concurrency: int = 10
     llm_timeout_s: float = 6.0
+    llm_effort: str | None = None  # output_config.effort; None = model default
     tick_deadline_s: float = 7.0
     reply_deadline_s: float = 5.0
     repair_min_remaining_s: float = 3.0
@@ -67,6 +68,7 @@ def load_settings() -> Settings:
         composer_model=os.getenv("VERA_COMPOSER_MODEL") or DEFAULT_COMPOSER_MODEL,
         llm_max_concurrency=_int("VERA_LLM_MAX_CONCURRENCY", 10),
         llm_timeout_s=_float("VERA_LLM_TIMEOUT_S", 6.0),
+        llm_effort=os.getenv("VERA_LLM_EFFORT") or None,
         tick_deadline_s=_float("VERA_TICK_DEADLINE_S", 7.0),
         reply_deadline_s=_float("VERA_REPLY_DEADLINE_S", 5.0),
         repair_min_remaining_s=_float("VERA_REPAIR_MIN_REMAINING_S", 3.0),

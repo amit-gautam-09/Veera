@@ -7,7 +7,8 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0–M3 done (deterministic grounded composer live; replies still a stub). Next: M4 LLM composer + cache.
+- M0–M4 done (LLM composer behind `ANTHROPIC_API_KEY`; without a key the deterministic composer runs).
+  Replies still a stub. Next: M5 planner property tests, M6 reply engine.
 - Golden snapshots: `tests/golden/snapshots.json`; regenerate after an intended wording change with
   `UPDATE_GOLDEN=1 PYTHONUTF8=1 .venv/Scripts/python.exe -m pytest tests/golden`.
 - Milestone checklist: `docs/04-implementation-plan.md`.

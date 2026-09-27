@@ -4,6 +4,11 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M6 reply engine: rule classifier (English/Hinglish/Devanagari), state machine per `docs/09` (auto-reply
+  ladder counted per merchant across conversation ids, opt-out/hostile exits with suppression, action-mode
+  deliverables per trigger kind, off-topic decline + redirect, defer waits, soft-no, slot confirmation, reply
+  after end), replay idempotency, per-turn language mirroring, optional `reply_v1` LLM phrasing with
+  validation; replay suite R1–R14.
 - M5 planner invariants P1–P8 as hypothesis property tests.
 ### Fixed
 - Empty `middle` produced a `template_params` entry that was empty (invalid for WhatsApp templates) and a

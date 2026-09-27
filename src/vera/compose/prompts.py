@@ -125,3 +125,45 @@ def build_user_prompt(
     if violations:
         lines.append("YOUR PREVIOUS ATTEMPT BROKE THESE RULES, FIX THEM: " + "; ".join(violations))
     return "\n".join(lines)
+
+
+REPLY_VERSION = "reply_v1"
+
+REPLY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["body"],
+    "properties": {"body": {"type": "string", "description": "The full reply, ending with its one call to action."}},
+}
+
+REPLY_SYSTEM = """You continue a WhatsApp conversation as Vera, magicpin's assistant for local merchants in India, or as \
+the business replying to its own customer. Code has already classified the latest message and decided what the reply \
+must do; a grounded REFERENCE REPLY shows it. Rewrite it so it reads naturally as the next turn of THIS conversation.
+
+Return JSON: {"body": "..."}.
+
+Hard rules. A reply that breaks any of them is thrown away:
+1. Do exactly what the REFERENCE REPLY does: same action, same deliverable, same single ask at the end. If it \
+contains a draft, keep the draft's content.
+2. Use only facts from FACTS, the REFERENCE REPLY or the conversation. Never invent numbers, prices, dates, slots, \
+names, studies, results or features. Numbers the other person wrote may be repeated.
+3. No greeting, no self-introduction, no "hope you are well", no links, no promised attachments or PDFs.
+4. If the reference delivers something (action mode), deliver it; never ask a qualifying question such as "would \
+you", "do you", "can you tell", "what if" or "how about".
+5. Follow LANGUAGE exactly (hinglish: natural Hindi-English in Roman script; english: English only).
+6. Never use phrases listed under TABOO, field names, or words with underscores.
+7. Keep it shorter than 70 words unless it carries a draft."""
+
+
+def build_reply_prompt(
+    *, language: str, intent: str, turns: list[str], facts_block: str, reference: str, taboos: list[str]
+) -> str:
+    lines = [
+        f"LANGUAGE: {language}",
+        f"CLASSIFIED INTENT OF THE LATEST MESSAGE: {intent}",
+        f"TABOO: {'; '.join(taboos)}",
+        "CONVERSATION (oldest first):",
+    ]
+    lines += [f"- {t}" for t in turns[-6:]]
+    lines += ["FACTS:", facts_block or "(none beyond the conversation)", "REFERENCE REPLY:", reference]
+    return "\n".join(lines)

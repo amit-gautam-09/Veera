@@ -135,8 +135,8 @@ src/vera/
   compose/validator.py grounding + style checks, sentence drop
   compose/cache.py     input hashing, compose cache, precompute task registry
   reply/classifier.py  rule-based intent detection (English, Hinglish, Devanagari)
-  reply/policy.py      state machine (09-conversation-policy)
-  reply/composer.py    reply prompt + fallback replies
+  reply/engine.py      state machine (09), lazy conversations, replay idempotency, optional LLM phrasing
+  reply/responses.py   deterministic replies and action-mode deliverables built from context
   llm/gateway.py       LLMGateway protocol + AnthropicGateway (timeouts, no retries, JSON)
   domain/language.py   language directive, Hinglish detection
   domain/salutation.py owner name normalisation per category
@@ -250,13 +250,13 @@ skipped rather than sent. Also used when `ANTHROPIC_API_KEY` is unset or
 
 ### 4.11 ReplyEngine (`reply/`)
 - `classifier.py`: ordered rules (09 §2) over the normalised inbound; returns `(intent, confidence, evidence)`.
-- `policy.py`: state machine (09 §3) → `send | wait | end` plus what a `send` must contain (acknowledgement,
-  deliverable, redirect, apology).
-- `composer.py`: one LLM call (`reply_v1`) that receives conversation state, the promised deliverable, the fact
-  sheet of the original trigger, the inbound message, the policy directive and, if the rules were
-  inconclusive, asks the model to classify and act in the same call. Output `{intent, action, body, cta,
-  wait_seconds, rationale}`, validated like tick output (numbers from the merchant's own message are added to
-  the allowed index). Fallback replies are deterministic per intent.
+- `engine.py`: state machine (09 §3) → `send | wait | end`; the deterministic reply for the chosen row comes
+  from `responses.py` (deliverables per trigger kind, built only from context).
+- Optional LLM phrasing (`reply_v1`): for rows whose exact wording doesn't matter (not auto-reply, opt-out,
+  hostile, slot confirmation, defer), the model rewrites the deterministic reply as the next natural turn,
+  keeping its action and ask. Output `{body}`, validated like tick output (numbers from the inbound message are
+  allowed); any failure keeps the deterministic reply. Classification stays rule-based (the `unclear` row
+  restates the open question).
 - Deadline 5 s (`VERA_REPLY_DEADLINE_S`).
 
 ### 4.12 LLMGateway (`llm/gateway.py`)

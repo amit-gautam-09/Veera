@@ -72,11 +72,12 @@ Depends on M1 approval.
   empty-middle template bug.
 
 ## M6 — Reply engine (`feat/m6-replies`)
-- [ ] `reply/classifier.py` rules (English, Hinglish, Devanagari), per-merchant auto-reply counter
-- [ ] `reply/policy.py` state machine (09), lazy conversations seeded from history, replay cache
-- [ ] `reply/composer.py` + `prompts/reply_v1.txt`, deterministic fallback replies, V17
+- [x] `reply/classifier.py` rules (English, Hinglish, Devanagari), per-merchant auto-reply counter
+- [x] `reply/engine.py` state machine (09), lazy conversations seeded from history, replay idempotency
+- [x] `reply/responses.py` deterministic replies + deliverables, `reply_v1` optional LLM phrasing, V17
 - **Tests**: replay suite R1–R14
-- **Accept**: replay suite 100%; simulator `auto_reply_hell`, `intent_transition`, `hostile` pass.
+- **Accept**: replay suite 100%; simulator `auto_reply_hell`, `intent_transition`, `hostile` pass. ✅ (R1–R14
+  + regression; official simulator `all`: every scenario PASS, auto-reply ends on the 3rd canned message)
 
 ## M7 — Evaluation harness (`feat/m7-eval`)
 - [ ] `eval/harness.py`: expanded dataset, incremental trigger pushes, persona-played reply turns, full-context

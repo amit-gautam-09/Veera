@@ -156,6 +156,37 @@ def validate(
     return check
 
 
+def validate_reply(
+    body: str,
+    sheet: FactSheet,
+    *,
+    language: str,
+    extra_numbers: set[str] | None = None,
+    action_mode: bool = False,
+    prior_body_hashes: list[str] | None = None,
+) -> Check:
+    """Replies have no salutation slot: validate the body as middle + final sentence."""
+    parts = [s for s in _SENTENCE.split(body.strip()) if s]
+    ask = parts[-1] if parts else ""
+    middle = " ".join(parts[:-1]) or ask
+    check = validate(
+        "-",
+        middle,
+        ask,
+        sheet,
+        language=language,
+        salutation_name=None,
+        first_message=False,
+        prior_body_hashes=prior_body_hashes,
+        extra_numbers=extra_numbers,
+        action_mode=action_mode,
+    )
+    check.violations = [
+        v for v in check.violations if v not in {"V1:question outside ask", "V2:ask has several sentences"}
+    ]
+    return check
+
+
 def offending_sentences(middle: str, check: Check) -> list[str]:
     """Sentences in `middle` that contain an offending token (for the drop-sentence repair)."""
     tokens = [v.split(":", 1)[1] for v in check.violations if ":" in v and v.split(":", 1)[0] in {"V6", "V9", "V10"}]

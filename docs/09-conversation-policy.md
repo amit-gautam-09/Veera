@@ -32,6 +32,11 @@ first decisive match wins. Hindi is matched in Roman script and Devanagari.
 | 10 | `engaged_info` | substantive statement (≥ 3 words) that answers our question or adds information |
 | — | `unclear` | nothing decisive → handled by the LLM reply call, which classifies and composes in one step |
 
+Repeat detection: a long statement (≥ 30 chars) already received from this merchant, on any conversation, is
+treated as a canned reply, but only after the accept / defer / soft-no / off-topic rules have had their turn, so a
+merchant saying "ok let's do it" twice is never mistaken for an auto-reply. A genuine reply resets the merchant's
+auto-reply ladder.
+
 Mixed messages: `opt_out` beats everything; `hostile` + a question ("useless… can you do GST?") is handled as
 `hostile` this turn; `accept` + question ("yes, but how much?") is `accept` with the question answered inside
 the deliverable.

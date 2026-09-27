@@ -58,6 +58,7 @@ class MerchantFlags(BaseModel):
     opted_out_at: str | None = None
     auto_reply_counts: dict[str, int] = Field(default_factory=dict)
     unanswered_proactive: int = 0
+    inbound_hashes: list[str] = Field(default_factory=list)  # recent inbound texts, for repeat detection
     sent_body_hashes: list[str] = Field(default_factory=list)
 
 

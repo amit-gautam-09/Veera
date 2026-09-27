@@ -145,6 +145,7 @@ class Ctx:
     category: dict[str, Any]
     customer: dict[str, Any] | None
     derived: list[Any] = field(default_factory=list)
+    lang_override: Language | None = None  # replies mirror the inbound language
 
     # --- identity -----------------------------------------------------------------------------
     @property
@@ -186,10 +187,12 @@ class Ctx:
 
     @property
     def lang(self) -> Language:
-        return merchant_language(self.merchant, self.category)
+        return self.lang_override or merchant_language(self.merchant, self.category)
 
     @property
     def cust_lang(self) -> Language:
+        if self.lang_override:
+            return self.lang_override
         return customer_language(self.customer) if self.customer else "english"
 
     @property

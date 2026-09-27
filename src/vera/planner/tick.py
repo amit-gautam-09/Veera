@@ -126,7 +126,7 @@ def _commit(
             status="awaiting_reply",
             turns=[Turn(turn_number=1, role="vera", body=msg.body, ts=request.now or now)],
             promised_deliverable=msg.promised_deliverable,
-            last_proposal=msg.promised_deliverable,
+            last_proposal=msg.template_params[2] if len(msg.template_params) > 2 else None,
         )
     )
     store.record_suppression(

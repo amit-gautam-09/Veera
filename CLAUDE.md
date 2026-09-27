@@ -7,8 +7,28 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0 bootstrap: done. M1 docs: in progress on `docs/m1-foundation`.
-- Milestone checklist: `docs/04-implementation-plan.md`.
+- M0 bootstrap and M1 docs: done on `docs/m1-foundation` (PR to `main`). Waiting on the review checkpoint.
+- Next: M2 contract skeleton on `feat/m2-skeleton`. Milestone checklist: `docs/04-implementation-plan.md`.
+
+## Docs (read in this order when starting cold)
+| Doc | Use it for |
+|---|---|
+| `docs/00-context-digest.md` | Two-page summary of the challenge and business |
+| `docs/02-TRD.md` | Architecture, components, latency budget, config, error matrix |
+| `docs/07-trigger-playbook.md` | Per-kind rules the decision step implements (26 kinds + generic) |
+| `docs/06-composer-spec.md` | Fact sheet format, prompt, output schema, validator rules V1–V17 |
+| `docs/09-conversation-policy.md` | Reply classifier + state machine |
+| `docs/12-risk-and-ambiguity-register.md` | Every contradiction and how it was resolved |
+| `docs/01-PRD.md`, `03`, `05` + `openapi.yaml`, `08`, `10`, `11`, `adr/` | Requirements, schema, API, voice, tests, deploy, decisions |
+
+## Key decisions (details in ADRs)
+- Code decides (signal, CTA, template, send_as, language); the LLM writes `{opener, middle, ask, rationale}` (ADR-009).
+- `claude-sonnet-5`, thinking disabled, structured output, **no temperature** (rejected on Sonnet 5);
+  determinism via the input-hash compose cache (ADR-002, ADR-004).
+- SQLite write-through with a 2 h restore window on boot; teardown wipes (ADR-003).
+- Only listed `available_triggers` are candidates; never compare `expires_at` or derive durations from `now`.
+- Auto-reply: pattern + per-merchant repeat count → send, wait 24h, end (ADR-006).
+- Consent gate; failures re-route to a merchant approval message (ADR-008). Language by region (ADR-007).
 
 ## Commands (Windows / Git Bash)
 ```bash

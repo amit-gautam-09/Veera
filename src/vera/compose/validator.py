@@ -12,7 +12,7 @@ from pathlib import Path
 from vera.compose.facts import FactSheet
 from vera.compose.numbers import dates_in_text, numbers_in_text
 from vera.domain.ids import text_hash
-from vera.domain.language import UNAMBIGUOUS_HINDI, hindi_word_count
+from vera.domain.language import DEVANAGARI, UNAMBIGUOUS_HINDI, hindi_word_count
 
 MAX_BODY_CHARS = 900
 SMALL_INT_LIMIT = 10
@@ -188,6 +188,8 @@ def validate(
         w in UNAMBIGUOUS_HINDI for w in re.findall(r"[a-z]+", lowered)
     ):
         check.add("V15", "expected english")
+    if DEVANAGARI.search(body):  # every output language is Roman script
+        check.add("V15", "devanagari script")
     # V16 salutation
     if salutation_name and salutation_name.lower() not in opener.lower():
         check.add("V16", salutation_name)

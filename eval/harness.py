@@ -6,8 +6,9 @@ visible, and LLM personas play up to --reply-turns merchant/customer replies per
 
 Usage:
   python -m eval.harness --bot-url http://127.0.0.1:8080 [--reply-turns 3] [--limit 38]
-Env (or .env): BOT_URL, JUDGE_LLM_API_KEY, JUDGE_LLM_MODEL (default claude-sonnet-5),
-               PERSONA_LLM_MODEL (default claude-haiku-4-5-20251001)
+Env (or .env): BOT_URL, JUDGE_LLM_API_KEY, JUDGE_LLM_PROVIDER (anthropic | gemini),
+               JUDGE_LLM_MODEL (default claude-sonnet-5; gemini: gemini-3.1-flash-lite),
+               PERSONA_LLM_MODEL (default claude-haiku-4-5-20251001; gemini: gemini-3.1-flash-lite)
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from dotenv import load_dotenv
 from eval.grounding import audit
 from vera.compose.validator import plagiarism_ratio
 from vera.domain.ids import text_hash
+from vera.llm.gateway import GEMINI_BASE_URL
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPANDED = ROOT / "reference" / "challenge" / "expanded"
@@ -59,6 +61,9 @@ FIELDS = {
 PERSONAS = ["engaged", "auto_reply", "hard_no", "curveball", "hindi_switch"]
 TICK_BATCH = 5
 REQUEST_TIMEOUT_S = 30
+LLM_RETRIES = 6
+LLM_TIMEOUT_S = 60
+GEMINI_DEFAULT_MODEL = "gemini-3.1-flash-lite"  # own free quota; the bot uses gemini-3.5-flash-lite
 
 JUDGE_SYSTEM = """You are a strict judge for the magicpin AI Challenge. Score one WhatsApp message that a bot \
 ("Vera") composed for a merchant, or for a merchant's customer, from the contexts below. 5 is average, 7 good, \
@@ -123,10 +128,29 @@ class Bot:
         )[0]
 
 
+def make_openai_compatible(key: str, model: str) -> Any:
+    import openai
+
+    # The SDK retries 429/5xx with exponential backoff; free Gemini needs several tries under load.
+    client = openai.OpenAI(api_key=key, base_url=GEMINI_BASE_URL, max_retries=LLM_RETRIES, timeout=LLM_TIMEOUT_S)
+
+    def complete(system: str, prompt: str, max_tokens: int = 600) -> str:
+        resp = client.chat.completions.create(
+            model=model,
+            max_tokens=max_tokens,
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+        )
+        return resp.choices[0].message.content or ""
+
+    return complete
+
+
 def make_llm(model_env: str, default: str) -> Any:
     key = os.getenv("JUDGE_LLM_API_KEY")
     if not key:
         return None
+    if os.getenv("JUDGE_LLM_PROVIDER", "anthropic") == "gemini":
+        return make_openai_compatible(key, os.getenv(model_env) or GEMINI_DEFAULT_MODEL)
     import anthropic
 
     client, model = anthropic.Anthropic(api_key=key, max_retries=2), os.getenv(model_env) or default

@@ -21,9 +21,11 @@ class FakeGateway:
 
     def __init__(self, outputs: list[Any], delay: float = 0.0) -> None:
         self.outputs, self.delay, self.calls = list(outputs), delay, 0
+        self.timeouts: list[float] = []
 
     async def complete_json(self, system: str, user: str, schema: dict[str, Any], timeout_s: float) -> dict[str, Any]:
         self.calls += 1
+        self.timeouts.append(timeout_s)
         if self.delay:
             await asyncio.sleep(self.delay)
         out = self.outputs.pop(0) if self.outputs else self.outputs_last
@@ -119,3 +121,10 @@ def test_input_hash_changes_with_context_content() -> None:
     store.put_context("merchant", "m_002_bharat_dentist_mumbai", 2, merchant)
     prep2 = prepare(store, TRIGGER)
     assert not isinstance(prep2, Skip) and input_hash(prep2, "m") != before
+
+
+def test_gateway_gets_whole_budget_not_a_fixed_cap() -> None:
+    # Regression: a 6 s cap applied before queueing killed bulk precompute after 6 s despite a 25 s budget.
+    gw = FakeGateway([GOOD])
+    run(Composer(_store(), gw).compose(TRIGGER, time.monotonic() + 20))
+    assert gw.timeouts[0] > 19

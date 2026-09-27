@@ -360,7 +360,7 @@ Priority: environment variables → `.env` file → defaults below.
 | `VERA_COMPOSER_MODEL` | provider default (`claude-sonnet-5` / `gemini-3.5-flash-lite`) | Model for tick and reply composition |
 | `VERA_LLM_EFFORT` | provider default (gemini: `low`) | Anthropic `output_config.effort` / OpenAI-compatible `reasoning_effort` |
 | `VERA_LLM_MAX_CONCURRENCY` | `10` | Concurrent LLM calls |
-| `VERA_LLM_TIMEOUT_S` | `6` | Upper bound per LLM call (further capped by the deadline) |
+| `VERA_LLM_TIMEOUT_S` | `6` | Upper bound per LLM HTTP call, applied after the concurrency slot is acquired (the caller's deadline still caps the total) |
 | `VERA_TICK_DEADLINE_S` | `7` | Tick hard deadline |
 | `VERA_REPLY_DEADLINE_S` | `5` | Reply hard deadline |
 | `VERA_REPAIR_MIN_REMAINING_S` | `3` | Minimum time left to attempt a repair call |

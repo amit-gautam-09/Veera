@@ -99,52 +99,132 @@ def last_visit(ctx: Ctx) -> str | None:
 def approval_plan(ctx: Ctx, reason: str) -> Plan | Skip:
     if ctx.placeholder:
         return Skip(reason=f"consent:{reason}:thin_payload")
-    p, kind = ctx.payload, ctx.kind
+    p, kind, one = ctx.payload, ctx.kind, ctx.people[:-1]
     facts: list[Any] = []
+    if kind in {"customer_lapsed_hard", "customer_lapsed_soft"}:
+        return lapsed_approval(ctx, reason)
+    if kind == "wedding_package_followup" and fmt_date(p.get("wedding_date")):
+        return wedding_approval(ctx, reason)
     if kind == "recall_due":
         service = humanize(str(p.get("service_due") or "visit"))
         due = fmt_date(p.get("due_date"))
         slots = [str(s.get("label")) for s in p.get("available_slots") or [] if isinstance(s, dict) and s.get("label")]
-        what = (
-            f"their {service}"
-            + (f" (due {due})" if due else "")
-            + (f"; open slots: {' or '.join(slots)}" if slots else "")
-        )
+        what = f"their {service}"
+        en = f"One of your {ctx.people} is due for their {service}" + (f" on {due}." if due else ".")
+        hi = f"Aapke ek {one} ka {service}" + (f" {due} ko" if due else "") + " due hai."
+        if slots:
+            en += f" Open slots: {' or '.join(slots)}."
+            hi += f" Khaali slots: {' ya '.join(slots)}."
     elif kind == "chronic_refill_due":
         meds = ", ".join(p.get("molecule_list") or [])
         runs_out = fmt_date(p.get("stock_runs_out_iso"))
-        what = f"a refill of {meds}" + (f" before {runs_out}" if runs_out else "")
-    elif kind in {"customer_lapsed_hard", "customer_lapsed_soft"}:
-        days = p.get("days_since_last_visit")
-        what = "a come-back note" + (f" ({days} days since their last visit)" if days else "")
+        what = f"a refill of {meds}"
+        en = f"One of your {ctx.people} needs a refill of {meds}" + (f" before {runs_out}." if runs_out else ".")
+        hi = f"Aapke ek {one} ko {meds} ka refill chahiye" + (f", {runs_out} se pehle." if runs_out else ".")
     elif kind == "trial_followup":
         options = [str(s.get("label")) for s in p.get("next_session_options") or [] if isinstance(s, dict)]
-        what = "a follow-up after their trial" + (f"; next session {options[0]}" if options else "")
-    elif kind == "wedding_package_followup":
-        wedding = fmt_date(p.get("wedding_date"), with_year=True)
-        what = "their pre-wedding next step" + (f" (wedding on {wedding})" if wedding else "")
+        what = "a follow-up after their trial"
+        en = f"One of your {ctx.people} finished a trial" + (f"; the next session is {options[0]}." if options else ".")
+        hi = f"Aapke ek {one} ka trial ho gaya hai" + (f"; agla session {options[0]} ko hai." if options else ".")
     elif kind == "appointment_tomorrow":
         what = "a reminder for tomorrow's appointment"
+        en, hi = f"One of your {ctx.people} has an appointment tomorrow.", f"Aapke ek {one} ka kal appointment hai."
     else:
         what = humanize(kind)
-    lines = [
-        ctx.t(f"One of your {ctx.people} is due for {what}.", f"Aapke ek {ctx.people[:-1]} ke liye {what} due hai.")
-    ]
+        en, hi = f"One of your {ctx.people} is due for {what}.", f"Aapke ek {one} ke liye {what} due hai."
+    lines = [ctx.t(en, hi)]
     ask = ctx.t(
         "Want me to send them the reminder from your number?", "Kya main aapke number se unhe reminder bhej doon?"
     )
-    facts.append(F("Reason customer was not messaged directly", reason))
+    return approval(ctx, reason, lines, ask, facts, f"customer reminder for {what}")
+
+
+def approval(ctx: Ctx, reason: str, lines: list[str], ask: str, facts: list[Any], deliverable: str) -> Plan:
     return Plan(
         family="approval",
         cta="binary_yes_no",
         lines=lines,
         ask=ask,
-        facts=facts + base_facts(ctx),
+        facts=facts + [F("Reason customer was not messaged directly", reason)] + base_facts(ctx),
         levers=["effort externalisation", "specificity"],
-        primary=f"{kind} awaiting merchant approval",
-        deliverable=f"customer reminder for {what}",
+        primary=f"{ctx.kind} awaiting merchant approval",
+        deliverable=deliverable,
         notes=["merchant-facing; no customer name; only payload facts"],
     )
+
+
+def lapsed_approval(ctx: Ctx, reason: str) -> Plan:
+    p, one = ctx.payload, ctx.people[:-1]
+    days, months = p.get("days_since_last_visit"), p.get("previous_membership_months")
+    focus = humanize(str(p["previous_focus"])) if p.get("previous_focus") else None
+    offer = ctx.active_offers[0] if ctx.active_offers else None
+    who_en = (
+        f"A {one}"
+        + (f" who was with you for {months} months" if months else "")
+        + (f", working on {focus}," if focus else "")
+    )
+    who_hi = (
+        f"Aapke ek {one}"
+        + (f" jo {months} mahine aapke saath the" if months else "")
+        + (f" ({focus} ke liye)" if focus else "")
+    )
+    lines = [
+        ctx.t(
+            who_en + (f" hasn't been back in {days} days." if days else " hasn't been back in a while."),
+            who_hi + (f", {days} din se nahi aaye." if days else ", kaafi time se nahi aaye."),
+        )
+    ]
+    if offer:
+        lines.append(
+            ctx.t(
+                f"Your '{offer}' offer is a low-pressure way back in.",
+                f"Aapka '{offer}' offer unke liye wapas aane ka aasaan tareeka hai.",
+            )
+        )
+    ask = ctx.t(
+        f"Want me to send them a friendly come-back note{' with that offer' if offer else ''} from your number?",
+        f"Kya main aapke number se unhe ek friendly come-back note{' is offer ke saath' if offer else ''} bhej doon?",
+    )
+    facts = [
+        F("Days since last visit", days or "n/a", visible=True),
+        F("Months as a customer", months or "n/a", visible=True),
+        F("Previous focus", focus or "n/a", visible=True),
+        F("Offer (theirs)", offer or "none"),
+    ]
+    return approval(ctx, reason, lines, ask, facts, "come-back note to a lapsed customer")
+
+
+def prep_step(raw: str) -> str:
+    m = re.match(r"^(.*)_(\d+)day$", raw)
+    return f"{m.group(2)}-day {humanize(m.group(1)).replace('skin prep', 'skin-prep')}" if m else humanize(raw)
+
+
+def wedding_approval(ctx: Ctx, reason: str) -> Plan:
+    p, one = ctx.payload, ctx.people[:-1]
+    wedding, trial = fmt_date(p.get("wedding_date"), with_year=True), fmt_date(p.get("trial_completed"))
+    step = prep_step(str(p.get("next_step_window_open") or "next_prep_step"))
+    lines = [
+        ctx.t(
+            f"A {one}'s wedding is on {wedding}"
+            + (f", and they finished their bridal trial on {trial}." if trial else "."),
+            f"Aapke ek {one} ki shaadi {wedding} ko hai"
+            + (f", aur unka bridal trial {trial} ko ho gaya." if trial else "."),
+        ),
+        ctx.t(
+            f"The window for the {step} is open now, so this is the right time to book it.",
+            f"{step} ka window ab khula hai, booking ka sahi time yahi hai.",
+        ),
+    ]
+    ask = ctx.t(
+        f"Want me to send them the {step} details from your number?",
+        f"Kya main aapke number se unhe {step} ki details bhej doon?",
+    )
+    facts = [
+        F("Wedding date", wedding, visible=True),
+        F("Trial completed", trial or "n/a", visible=True),
+        F("Next step", step, visible=True),
+    ]
+    return approval(ctx, reason, lines, ask, facts, f"{step} details for a wedding client")
 
 
 def gate(ctx: Ctx) -> str | None:
@@ -490,9 +570,7 @@ def wedding_package_followup(ctx: Ctx) -> Plan | Skip:
     if not wedding or ctx.slug not in {"salons", "dentists", "gyms"}:
         return Skip(reason="no_hook:no_wedding_date")
     trial = fmt_date(p.get("trial_completed"))
-    raw_step = str(p.get("next_step_window_open") or "next_prep_step")
-    m = re.match(r"^(.*)_(\d+)day$", raw_step)
-    step = f"{m.group(2)}-day {humanize(m.group(1)).replace('skin prep', 'skin-prep')}" if m else humanize(raw_step)
+    step = prep_step(str(p.get("next_step_window_open") or "next_prep_step"))
     lines = [
         ctx.tc(
             f"{sender(ctx)} here"

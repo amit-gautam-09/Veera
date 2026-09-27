@@ -61,7 +61,7 @@ HINDI_WORDS = {
     "kyun",
 }
 UNAMBIGUOUS_HINDI = {"hai", "hain", "aap", "aapke", "aapka", "aapki", "nahi", "nahin", "kya", "hum", "yeh", "doon"}
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 _WORD = re.compile(r"[a-zA-Z]+")
 
 
@@ -88,6 +88,6 @@ def hindi_word_count(text: str) -> int:
 
 def detect_language(text: str) -> Language:
     """Language of an inbound message: Devanagari or >= 2 Hindi function words -> hinglish."""
-    if _DEVANAGARI.search(text):
+    if DEVANAGARI.search(text):
         return "hinglish"
     return "hinglish" if hindi_word_count(text) >= 2 else "english"

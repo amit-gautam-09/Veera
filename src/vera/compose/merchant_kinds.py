@@ -791,17 +791,31 @@ def winback_eligible(ctx: Ctx) -> Plan | Skip:
 @handles("dormant_with_vera")
 def dormant_with_vera(ctx: Ctx) -> Plan | Skip:
     lapsed_key = next((k for k in ctx.agg if k.startswith("lapsed_") and isinstance(ctx.agg[k], int)), None)
-    facts = [F("Days since last merchant message", ctx.payload.get("days_since_last_merchant_message", "n/a"))]
+    silent = ctx.payload.get("days_since_last_merchant_message")
+    facts = [F("Days since last merchant message", silent or "n/a", visible=True)]
+    why_now = (
+        [
+            ctx.t(
+                f"It's been {silent} days since we last heard from you.", f"Aapse pichhli baat ko {silent} din ho gaye."
+            )
+        ]
+        if isinstance(silent, int) and not isinstance(silent, bool)
+        else []
+    )
     if lapsed_key and ctx.agg[lapsed_key]:
         m = re.search(r"(\d+)d", lapsed_key)
         span = f"{m.group(1)}+ days" if m else "a while"
         if m:
             ctx.derive(int(m.group(1)))
-        n = ctx.agg[lapsed_key]
+        n, total = ctx.agg[lapsed_key], ctx.agg.get("total_unique_ytd")
+        of_en = (
+            f"{n} of the {fmt_int(total)} {ctx.people} you've seen this year" if total else f"{n} of your {ctx.people}"
+        )
+        of_hi = f"is saal aaye aapke {fmt_int(total)} {ctx.people} mein se {n}" if total else f"aapke {n} {ctx.people}"
         lines = [
             ctx.t(
-                f"Quick one: {n} of your {ctx.people} haven't been back in {span}.",
-                f"Ek chhoti baat: aapke {n} {ctx.people} {span.replace('days', 'din')} se wapas nahi aaye.",
+                f"magicpin data shows {of_en} haven't been back in {span}.",
+                f"magicpin data ke hisaab se {of_hi}, {span.replace('days', 'din')} se wapas nahi aaye.",
             )
         ]
         ask = ctx.t(
@@ -840,7 +854,7 @@ def dormant_with_vera(ctx: Ctx) -> Plan | Skip:
         ctx,
         "account",
         "open_ended",
-        lines,
+        why_now + lines,
         ask,
         facts,
         ["reciprocity", "asking the merchant", "curiosity"],

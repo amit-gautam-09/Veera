@@ -63,7 +63,7 @@ def _default_components(store: Store, settings: Settings) -> tuple[Composer, Rep
     from vera.reply.engine import ReplyEngine
 
     gateway = make_gateway(settings)
-    composer = PipelineComposer(store, gateway, settings.repair_min_remaining_s, settings.llm_timeout_s)
+    composer = PipelineComposer(store, gateway, settings.repair_min_remaining_s)
     return composer, ReplyEngine(store, gateway, settings.reply_deadline_s, min(settings.llm_timeout_s, 4.5))
 
 

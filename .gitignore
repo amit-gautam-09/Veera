@@ -1,0 +1,40 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Runtime state
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Eval output (summaries are copied into docs/10)
+eval/results/
+
+# Challenge inputs kept locally, extracted copies live in reference/
+magicpin-ai-challenge.zip
+
+# Local copy of the simulator with keys pasted in (never commit)
+judge_simulator.local.py
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

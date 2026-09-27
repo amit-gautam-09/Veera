@@ -108,6 +108,39 @@ SIGNAL_LABELS: dict[str, str] = {
 }
 
 
+Shape = dict[str, Any]  # field -> dict | list | nested Shape
+TRIGGER_SHAPE: Shape = {"payload": dict}
+MERCHANT_SHAPE: Shape = {
+    "identity": {"languages": list}, "performance": {"delta_7d": dict}, "subscription": dict,
+    "customer_aggregate": dict, "offers": list, "signals": list, "review_themes": list, "conversation_history": list,
+}  # fmt: skip
+CATEGORY_SHAPE: Shape = {
+    "voice": {"vocab_allowed": list, "vocab_taboo": list, "taboos": list}, "peer_stats": dict, "digest": list,
+    "offer_catalog": list, "seasonal_beats": list, "trend_signals": list, "patient_content_library": list,
+    "regulatory_authorities": list, "professional_journals": list,
+}  # fmt: skip
+CUSTOMER_SHAPE: Shape = {
+    "identity": dict, "relationship": {"services_received": list}, "preferences": dict, "consent": {"scope": list},
+}  # fmt: skip
+
+
+def sanitize(obj: Any, shape: Shape) -> dict[str, Any]:
+    """Shallow copy where each known container field has the expected type (wrong type or null -> empty)."""
+    out = dict(obj) if isinstance(obj, dict) else {}
+    for key, expected in shape.items():
+        value = out.get(key)
+        if isinstance(expected, dict):
+            out[key] = sanitize(value, expected) if isinstance(value, dict) else {}
+        elif key in out and not isinstance(value, expected):
+            out[key] = expected()
+    return out
+
+
+def as_dict(value: Any) -> dict[str, Any]:
+    """Contexts are tolerant: a field that should be an object but isn't reads as empty."""
+    return value if isinstance(value, dict) else {}
+
+
 def humanize(key: str) -> str:
     return key.replace("_", " ").replace("  ", " ").strip()
 
@@ -147,6 +180,13 @@ class Ctx:
     derived: list[Any] = field(default_factory=list)
     lang_override: Language | None = None  # replies mirror the inbound language
 
+    def __post_init__(self) -> None:
+        # One boundary for type chaos: every downstream read goes through these sanitised copies.
+        self.trigger = sanitize(self.trigger, TRIGGER_SHAPE)
+        self.merchant = sanitize(self.merchant, MERCHANT_SHAPE)
+        self.category = sanitize(self.category, CATEGORY_SHAPE)
+        self.customer = sanitize(self.customer, CUSTOMER_SHAPE) if isinstance(self.customer, dict) else None
+
     # --- identity -----------------------------------------------------------------------------
     @property
     def kind(self) -> str:
@@ -167,7 +207,7 @@ class Ctx:
 
     @property
     def identity(self) -> dict[str, Any]:
-        return self.merchant.get("identity") or {}
+        return as_dict(self.merchant.get("identity"))
 
     @property
     def business(self) -> str:
@@ -215,20 +255,20 @@ class Ctx:
     # --- merchant data --------------------------------------------------------------------------
     @property
     def perf(self) -> dict[str, Any]:
-        return self.merchant.get("performance") or {}
+        return as_dict(self.merchant.get("performance"))
 
     @property
     def deltas(self) -> dict[str, float]:
-        d = self.perf.get("delta_7d") or {}
+        d = as_dict(self.perf.get("delta_7d"))
         return {k: float(v) for k, v in d.items() if isinstance(v, int | float) and not isinstance(v, bool)}
 
     @property
     def peer(self) -> dict[str, Any]:
-        return self.category.get("peer_stats") or {}
+        return as_dict(self.category.get("peer_stats"))
 
     @property
     def agg(self) -> dict[str, Any]:
-        return self.merchant.get("customer_aggregate") or {}
+        return as_dict(self.merchant.get("customer_aggregate"))
 
     @property
     def signals(self) -> list[str]:
@@ -239,7 +279,7 @@ class Ctx:
 
     @property
     def subscription(self) -> dict[str, Any]:
-        return self.merchant.get("subscription") or {}
+        return as_dict(self.merchant.get("subscription"))
 
     @property
     def active_offers(self) -> list[str]:

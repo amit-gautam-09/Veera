@@ -38,7 +38,10 @@ engagement compulsion. Docs are the spec; code implements them. When code diverg
 uv venv .venv && uv pip install --python .venv/Scripts/python.exe -e ".[dev]"
 .venv/Scripts/python.exe -m ruff check .
 .venv/Scripts/python.exe -m mypy
-.venv/Scripts/python.exe -m pytest -q
+.venv/Scripts/python.exe -m pytest -q            # default: excludes llm/slow/soak markers
+.venv/Scripts/python.exe -m pytest -q -m slow    # restart recovery (spawns servers)
+PYTHONUTF8=1 .venv/Scripts/python.exe scripts/soak.py --minutes 45   # against a running bot
+PYTHONUTF8=1 .venv/Scripts/python.exe -m eval.harness --reply-turns 3  # judge needs JUDGE_LLM_API_KEY
 # run the bot (1 worker; state in data/vera.db)
 .venv/Scripts/python.exe -m vera.main
 # official simulator via wrapper (non-scoring scenarios need no key)

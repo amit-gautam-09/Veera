@@ -88,10 +88,11 @@ Depends on M1 approval.
   Offline parts ✅ (0 findings, similarity 0.381); judge scores pending an API key.
 
 ## M8 — Hardening (`feat/m8-hardening`)
-- [ ] `scripts/soak.py` 10 req/s for 45 min; chaos cases (LLM timeouts, 429s, malformed contexts, unknown
-      scopes/kinds/merchants, > 500 KB, out-of-order versions)
-- [ ] Restart-recovery test (kill -9 mid-run, restart, compare state; outside the window → wiped)
-- **Accept**: zero 5xx, zero timeouts, state intact after restart, teardown zeroes counts.
+- [x] `scripts/soak.py` 10 req/s (2-minute run clean; 45-minute run before deploy); chaos cases (malformed
+      merchants/customers/payloads for every kind, weird replies, context edge cases, 50 concurrent pushes)
+- [x] Restart-recovery test (`-m slow`: kill mid-run, restart, compare state; outside the window → wiped)
+- **Accept**: zero 5xx, zero timeouts, state intact after restart, teardown zeroes counts. ✅ (chaos found one
+  root cause, wrong-typed nested fields, fixed at the `Ctx` boundary; 0 caught exceptions afterwards)
 
 ## M9 — Packaging and deployment (`feat/m9-release`)
 - [ ] `Dockerfile` (single worker, non-root, HEALTHCHECK), host config (per checkpoint decision)

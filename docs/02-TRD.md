@@ -189,7 +189,10 @@ bot.py, conversation_handlers.py   offline deliverables that call the same pipel
 6. **Commit**: create conversations, add suppression keys and body hashes, write through, return actions.
 
 ### 4.5 FactSheetBuilder (`compose/facts.py`)
-Deterministic, no LLM. Produces a `FactSheet`: ordered `Fact` records (`id`, `label`, `value`, `render`,
+Deterministic, no LLM. Every context passes through one sanitiser when the per-trigger `Ctx` is built
+(`facts.sanitize` with per-scope shapes): a nested field of the wrong type (a string where an object belongs, a
+null list) reads as empty, so malformed injected contexts degrade to missing facts instead of exceptions.
+Produces a `FactSheet`: ordered `Fact` records (`id`, `label`, `value`, `render`,
 `source_path`, `visible_to_judge`, `relevance`), the voice block, language directive, salutation, offers
 (merchant active first; catalog items flagged `suggestion_only`), and the **allowed-token index** used by the
 validator (every numeric rendering of every fact, every known proper noun, every source string).

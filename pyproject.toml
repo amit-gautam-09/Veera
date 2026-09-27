@@ -52,3 +52,5 @@ strict = true
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+markers = ["llm: real API calls (costs money)", "slow: spawns processes or runs > 10 s", "soak: 45-minute load test"]
+addopts = "-m 'not llm and not slow and not soak'"

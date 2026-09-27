@@ -4,6 +4,12 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M8 hardening: chaos tests (malformed contexts for every kind, weird replies, version edge cases,
+  concurrent pushes), restart-recovery test (`-m slow`), `scripts/soak.py`; pytest markers `llm`, `slow`,
+  `soak` excluded by default.
+### Fixed
+- Wrong-typed nested context fields (e.g. `delta_7d` as a string, `consent` as a string) raised inside the
+  composer; every context is now sanitised once when the per-trigger context is built.
 - M7 evaluation: independent grounding auditor (`eval/grounding.py`) with a fabrication negative control,
   extended harness (`python -m eval.harness`) with offline checks and optional LLM judge + personas, adaptation
   tests for new digest items, perf updates and injected customers.

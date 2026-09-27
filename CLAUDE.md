@@ -7,7 +7,9 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0–M2 done (M2: contract skeleton with stub composer/replies). Next: M3 fact sheet + fallback composer.
+- M0–M3 done (deterministic grounded composer live; replies still a stub). Next: M4 LLM composer + cache.
+- Golden snapshots: `tests/golden/snapshots.json`; regenerate after an intended wording change with
+  `UPDATE_GOLDEN=1 PYTHONUTF8=1 .venv/Scripts/python.exe -m pytest tests/golden`.
 - Milestone checklist: `docs/04-implementation-plan.md`.
 
 ## Docs (read in this order when starting cold)

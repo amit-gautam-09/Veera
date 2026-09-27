@@ -127,11 +127,12 @@ src/vera/
   planner/tick.py      candidate resolution, guards, ranking, per-merchant cap, deadline
   compose/facts.py     FactSheetBuilder + derived facts + allowed-token index
   compose/numbers.py   number/₹/%/date normalisation shared by facts and validator
-  compose/playbook.py  kind → family, template, CTA, levers, thin-payload + mismatch rules (07)
+  compose/playbook.py  Plan type, kind → family/template registry, decide()
+  compose/merchant_kinds.py  one handler per merchant-facing kind (07 §5–§10) + generic handler
+  compose/customer_kinds.py  customer kinds, consent gate, merchant-approval re-route (07 §11, ADR-008)
   compose/composer.py  prompt assembly, LLM call, assembly of body/template_params
   compose/prompts/     versioned prompt text (composer_v1, reply_v1)
   compose/validator.py grounding + style checks, sentence drop
-  compose/fallback.py  deterministic family templates
   compose/cache.py     input hashing, compose cache, precompute task registry
   reply/classifier.py  rule-based intent detection (English, Hinglish, Devanagari)
   reply/policy.py      state machine (09-conversation-policy)
@@ -229,10 +230,11 @@ Failure handling ladder: (1) drop the offending sentence from `middle` if what r
 signal; (2) one repair call listing the violations, only if ≥ 3 s remain; (3) fallback template. Whenever the body
 changes after the LLM call, the rationale is rebuilt in code from the decision record so the two always agree.
 
-### 4.9 FallbackComposer (`compose/fallback.py`)
-Deterministic templates per family × send_as, filled from the decision's primary and supporting facts, the
-salutation and the CTA sentence for the family. Hinglish and English variants. Always valid by construction
-(they only interpolate facts from the sheet). Also used when `ANTHROPIC_API_KEY` is unset or
+### 4.9 Fallback wording (`compose/merchant_kinds.py`, `compose/customer_kinds.py`)
+Each kind handler writes its own grounded English and Hinglish sentences from the facts it selected, next to
+the decision it makes, so the fallback message and the decision cannot drift apart. `composer.fallback_message`
+assembles and validates them; a failing sentence is dropped, and if nothing defensible remains the trigger is
+skipped rather than sent. Also used when `ANTHROPIC_API_KEY` is unset or
 `VERA_LLM_ENABLED=false`. Original wording, no case-study text.
 
 ### 4.10 Compose cache and precompute (`compose/cache.py`)

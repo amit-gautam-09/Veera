@@ -42,15 +42,16 @@ Depends on M1 approval.
   ranking and per-merchant cap landed here too; M5 adds the property tests)
 
 ## M3 — Fact sheet and deterministic fallback (`feat/m3-facts-fallback`)
-- [ ] `compose/numbers.py` normalisation; `compose/facts.py` FactSheetBuilder with derived facts and the
+- [x] `compose/numbers.py` normalisation; `compose/facts.py` FactSheetBuilder with derived facts and the
       allowed-token index; `domain/salutation.py`, `domain/language.py`
-- [ ] `compose/playbook.py`: registry for all 26 kinds + generic (07), consent gate + approval re-route,
+- [x] `compose/playbook.py` + `merchant_kinds.py` + `customer_kinds.py`: registry for all 26 kinds + generic (07), consent gate + approval re-route,
       S-PERF / S-DIGEST / S-MISMATCH / S-SEASON rules
-- [ ] `compose/validator.py` V1–V17
-- [ ] `compose/fallback.py`: family × send_as × language templates, original wording
-- [ ] Golden set: 30 pairs + 8 uncovered kinds (38 cases), LLM disabled
+- [x] `compose/validator.py` V1–V17
+- [x] Fallback wording per kind (English + Hinglish) inside the handlers, original wording
+- [x] Golden set: 30 pairs + 8 uncovered kinds (38 cases), LLM disabled, snapshot-reviewed
 - **Accept**: all 38 golden cases produce valid, grounded messages with the LLM off; grounding audit: zero
-  untraceable tokens; similarity check clean.
+  untraceable tokens; similarity check clean. ✅ (sweep over all 100 triggers: 96 composed, 4 correct
+  opt-out skips)
 
 ## M4 — LLM composer, repair loop, cache, precompute (`feat/m4-llm-composer`)
 - [ ] `llm/gateway.py` (AsyncAnthropic, `max_retries=0`, semaphore, error mapping, token logging)

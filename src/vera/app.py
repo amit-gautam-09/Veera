@@ -58,10 +58,10 @@ def build_store(settings: Settings) -> Store:
 
 
 def _default_components(store: Store, settings: Settings) -> tuple[Composer, ReplyHandler]:
-    from vera.compose.stub import StubComposer
+    from vera.compose.composer import Composer as PipelineComposer
     from vera.reply.stub import StubReplyHandler
 
-    return StubComposer(store), StubReplyHandler(store)
+    return PipelineComposer(store), StubReplyHandler(store)
 
 
 def create_app(

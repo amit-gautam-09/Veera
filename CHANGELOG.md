@@ -4,6 +4,10 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M3 deterministic composer: fact sheet with allowed-token index, per-kind playbook for all 26 kinds
+  + generic handler (thin-payload, mismatch, consent and approval rules), validator V1–V17, English and Hinglish
+  grounded wording; golden set of 38 snapshot-reviewed cases and unit tests for numbers, validator, salutation,
+  language and consent.
 - M2 contract skeleton: all six endpoints per `docs/05-api-contract.md` (400/409/500 KB, no 422/5xx),
   versioned context store with SQLite write-through and a restore window, tick planner (guards, ranking,
   per-merchant cap, deadline), stub composer and reply handler, `scripts/run_simulator.py` wrapper,

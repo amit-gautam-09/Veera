@@ -3,6 +3,11 @@
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+### Added (M11)
+- Free Gemini provider: `OpenAICompatibleGateway` + `make_gateway`, `VERA_LLM_PROVIDER` / `VERA_LLM_API_KEY` /
+  `VERA_LLM_BASE_URL`; Gemini defaults `gemini-3.5-flash-lite`, effort `low` (ADR-012). Prompt `composer_v3`;
+  validator V18 (customer messages name the business) and stricter V15 for English-primary merchants. Tests never
+  call a real LLM (autouse fixture).
 ### Fixed (M10 polish)
 - "I'll" was lowercased after a greeting; growing metrics framed an unverified profile as the cause of the growth
   (now "next step"); regulation messages repeated title and date; the IPL message hardcoded the sample digest's

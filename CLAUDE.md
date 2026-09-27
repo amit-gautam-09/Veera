@@ -7,8 +7,9 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0–M9 built. Remaining: deploy (Fly.io assumed) and real-LLM measurement, both waiting on Amit's API key,
-  host login and contact email. Stub modules `compose/stub.py`, `reply/stub.py` are unused (kept until Amit OKs
+- **Resuming? Read `session.md` first**: exact stopping point, results so far, next steps, open decisions.
+- M0–M11 built. LLM: free Gemini (`gemini-3.5-flash-lite`) via `.env` (`VERA_LLM_PROVIDER=gemini`); tests
+  force `VERA_LLM_ENABLED=false`. Remaining: deploy (Fly.io assumed; needs Amit's login) and contact email. Stub modules `compose/stub.py`, `reply/stub.py` are unused (kept until Amit OKs
   deleting them).
 - Golden snapshots: `tests/golden/snapshots.json`; regenerate after an intended wording change with
   `UPDATE_GOLDEN=1 PYTHONUTF8=1 .venv/Scripts/python.exe -m pytest tests/golden`.

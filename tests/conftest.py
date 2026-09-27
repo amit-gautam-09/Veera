@@ -42,6 +42,12 @@ def push_base_dataset(client: TestClient) -> None:
         assert push(client, "customer", c["customer_id"], c).status_code == 200
 
 
+@pytest.fixture(autouse=True)
+def _no_real_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests never call a real LLM (a local .env may configure one); subprocesses inherit this too."""
+    monkeypatch.setenv("VERA_LLM_ENABLED", "false")
+
+
 @pytest.fixture
 def settings() -> Settings:
     return Settings(db_path=None, anthropic_api_key=None, contact_email="test@example.com")

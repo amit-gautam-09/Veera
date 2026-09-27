@@ -1,7 +1,7 @@
 # Session record — Veera (Vera bot, magicpin AI Challenge)
 
 **Last updated**: 2026-09-27 (IST) · **Owner**: Amit Gautam · **Repo**: https://github.com/amit-gautam-09/Veera
-**Resume branch**: `feat/m12-judge-tuning` (committed locally, **not pushed**; stacked on `feat/m11-gemini` / PR #12)
+**Resume branch**: `feat/m12-judge-tuning` (PR against `main`; M2–M11 already merged to `main` via #13)
 
 Read this first when resuming, then `CLAUDE.md` (commands, map, gotchas). No secrets are in this file.
 
@@ -33,10 +33,9 @@ judge `gemini-3.1-flash-lite` (`gemini-flash-latest` = `gemini-3.8-flash`, only 
 | M9 | Dockerfile, fly.toml, bot.py, conversation_handlers.py, submission.jsonl, smoke script, README | #9 |
 | M10 | Deterministic wording polish (5 fixes) | #10 |
 | M11 | **Free Gemini provider** (`OpenAICompatibleGateway`, `make_gateway`), prompt `composer_v3`, V18, ADR-012; judge retries in simulator wrapper | #12 |
-| M12 | Queue-timeout fix (per-call cap after the semaphore), approval + dormancy wording, Hinglish approval sentences, V15 rejects Devanagari, harness Gemini judge/personas | not pushed |
+| M12 | Queue-timeout fix (per-call cap after the semaphore), approval + dormancy wording, Hinglish approval sentences, V15 rejects Devanagari, harness Gemini judge/personas | open (see `gh pr list`) |
 
-PRs #2–#10 and #12 are **stacked** (GitHub skipped #11): each is based on the previous branch. Merge in order; after each merge retarget the
-next PR to `main`.
+The stacked PRs #2–#10 and #12 were merged, and #13 brought the whole stack into `main` (2026-09-27).
 
 ## 3. Current configuration
 - LLM: free **Google Gemini** key in the gitignored `.env` (`VERA_LLM_PROVIDER=gemini`, `VERA_LLM_API_KEY`,
@@ -81,14 +80,13 @@ tick (kept on purpose, register R-11).
 6. **Pre-flight** (runbook §10), `POST /v1/teardown`, confirm healthz 0/0/0/0, submit the URL.
 
 ## 6. Decisions still needed from Amit
-- Push `feat/m12-judge-tuning` and open its PR (stacked on #12)?
+- Merge the M12 PR.
 - Keep the LLM composer on for submission, or go deterministic-only? Run B (deterministic) scored 42.9 vs run A
   (half LLM) 40.3 on the simulator judge; one small sample, so measure again with the LLM healthy first.
 - Contact email for `/v1/metadata` (`VERA_CONTACT_EMAIL`).
 - Keep the due-diligence dossier in this **public** repo, or remove it?
 - OK with the 2 h restore window (ADR-003)?
 - OK to delete unused stubs `src/vera/compose/stub.py`, `src/vera/reply/stub.py`?
-- Merge PRs #2–#10, then #12, in order.
 
 ## 7. Gotchas learned this session
 - Windows: run the simulator via `scripts/run_simulator.py` (UTF-8 re-exec); use `http://127.0.0.1:8080`, not

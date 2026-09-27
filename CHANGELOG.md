@@ -4,6 +4,11 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M9 packaging: `Dockerfile`, `.dockerignore`, `fly.toml`, `bot.py`, `conversation_handlers.py`,
+  `scripts/generate_submission.py` + `submission.jsonl` (30 lines), `scripts/smoke_public_url.sh`, 1-page README.
+### Changed
+- SQLite write-through is best-effort: a failed write is logged (`store.write_failed`) and memory stays the
+  source of truth. The case-study path for V14 is configurable (`VERA_CASE_STUDIES_PATH`).
 - M8 hardening: chaos tests (malformed contexts for every kind, weird replies, version edge cases,
   concurrent pushes), restart-recovery test (`-m slow`), `scripts/soak.py`; pytest markers `llm`, `slow`,
   `soak` excluded by default.

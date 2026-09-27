@@ -7,8 +7,9 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0–M6 done: tick composer (LLM behind `ANTHROPIC_API_KEY`, deterministic without) and reply engine.
-  Next: M7 eval harness, M8 hardening, M9 packaging/deploy.
+- M0–M9 built. Remaining: deploy (Fly.io assumed) and real-LLM measurement, both waiting on Amit's API key,
+  host login and contact email. Stub modules `compose/stub.py`, `reply/stub.py` are unused (kept until Amit OKs
+  deleting them).
 - Golden snapshots: `tests/golden/snapshots.json`; regenerate after an intended wording change with
   `UPDATE_GOLDEN=1 PYTHONUTF8=1 .venv/Scripts/python.exe -m pytest tests/golden`.
 - Milestone checklist: `docs/04-implementation-plan.md`.

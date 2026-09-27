@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import difflib
+import os
 import re
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -16,7 +17,10 @@ from vera.domain.language import UNAMBIGUOUS_HINDI, hindi_word_count
 MAX_BODY_CHARS = 900
 SMALL_INT_LIMIT = 10
 PLAGIARISM_RATIO = 0.6
-CASE_STUDIES = Path(__file__).resolve().parents[3] / "reference" / "challenge" / "examples" / "case-studies.md"
+CASE_STUDIES = Path(
+    os.getenv("VERA_CASE_STUDIES_PATH")
+    or Path(__file__).resolve().parents[3] / "reference" / "challenge" / "examples" / "case-studies.md"
+)
 
 _URL = re.compile(r"https?://|www\.|\b[\w-]+\.(?:com|in|ai|io|org|net|co)\b", re.IGNORECASE)
 _SNAKE = re.compile(r"\b[a-z0-9]+_[a-z0-9_]+\b")

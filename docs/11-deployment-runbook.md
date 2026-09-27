@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Owner | Amit Gautam |
-| Status | Draft v1 (M1). Host choice is confirmed at the M1 review checkpoint; commands below assume Fly.io. |
+| Status | v1 (M9). Files: `Dockerfile`, `.dockerignore`, `fly.toml`, `scripts/smoke_public_url.sh`. Host assumed Fly.io until Amit confirms. |
 | Related | `02-TRD.md` (process model, config), `10-evaluation-and-test-plan.md` (smoke + simulator), `12-risk-and-ambiguity-register.md` |
 
 Hard requirements from the harness: stable public HTTPS URL, **no sleeping or cold starts** (3 consecutive
@@ -22,7 +22,7 @@ crosses to Anthropic's US endpoints (~200–250 ms extra per call). Measure both
 cold-tick benchmark before the final deploy; pick the lower p99.
 
 ## 2. Container
-`Dockerfile` (outline; the real file lands in M9):
+`Dockerfile` (summary; the real file is at the repo root):
 ```dockerfile
 # Dockerfile
 FROM python:3.12-slim
@@ -32,15 +32,17 @@ RUN useradd --create-home --uid 1000 vera && mkdir -p /data && chown vera:vera /
 COPY pyproject.toml README.md ./
 COPY src ./src
 RUN pip install .
+COPY reference/challenge/examples/case-studies.md ./reference/challenge/examples/case-studies.md  # validator V14
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
   CMD python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:%s/v1/healthz' % os.environ.get('PORT','8080'), timeout=2)"
 # Fly volumes mount root-owned: fix ownership, then drop to the non-root user.
 CMD ["sh", "-c", "chown vera:vera /data && exec setpriv --reuid=1000 --regid=1000 --init-groups \
-  uvicorn vera.api.app:app --host 0.0.0.0 --port ${PORT} --workers 1 --timeout-graceful-shutdown 10"]
+  uvicorn vera.main:app --host 0.0.0.0 --port ${PORT} --workers 1 --timeout-graceful-shutdown 10"]
 ```
 Rules: exactly one uvicorn worker; no `--reload`; `.env` is never copied into the image (`.dockerignore`
-excludes `.env*`, `reference/`, `eval/`, `tests/`, `.venv/`, `data/`).
+excludes `.env*`, `eval/`, `tests/`, `scripts/`, `docs/`, `.venv/`, `data/`, and all of `reference/` except the
+case-study file the validator's similarity check reads, via `VERA_CASE_STUDIES_PATH`).
 
 `fly.toml` (outline):
 ```toml
@@ -120,10 +122,12 @@ fly status                                                # 1 machine, started, 
 4. Extended harness against the public URL (`eval/harness.py`), then `POST /v1/teardown`.
 
 ## 6. Monitoring
-- **Logs**: `fly logs` streams stdout JSON lines. Fields on every request: `ts`, `level`, `route`,
-  `status`, `latency_ms`, `request_id`; plus per action `merchant_id`, `trigger_id`, `conversation_id`,
-  `composer` (`llm` | `cache` | `template`), `prompt_version`, `validator_failures`, `input_tokens`,
-  `output_tokens`; plus per skip `skip_reason`. Grep examples: `fly logs | grep '"composer":"template"'`.
+- **Logs**: `fly logs` streams JSON lines (`ts`, `level`, `event`, plus event fields). Useful events:
+  `tick.done` (listed/candidates/actions), `tick.skip` / `tick.defer` (`reason`), `compose.llm_ok` (`path`:
+  llm/repaired), `compose.llm_unavailable` / `compose.llm_rejected` (fell back), `fallback.violations`,
+  `llm.call` (`latency_ms`, `tokens_in`, `tokens_out`), `llm.rate_limited`, `reply.done` (`intent`, `action`),
+  `reply.validation`, `store.write_failed`, `store.boot` (`restored`, `counts`). Examples:
+  `fly logs | grep llm.rate_limited`, `fly logs | grep '"event": "tick.done"'`.
 - **Uptime monitor**: UptimeRobot or Better Stack free tier, HTTPS check on `/v1/healthz` every 1 minute,
   alert by email/phone after 1 failure (the harness disqualifies after 3 at 60 s intervals, so one alert gives
   ~2 minutes to act).
@@ -182,4 +186,4 @@ A rollback restarts the machine; state survives within the restore window.
 | 429 rate limits | `validator_failures`/errors mention rate limit | Lower `VERA_LLM_MAX_CONCURRENCY` (e.g. 10 → 4); templates cover the gap. Check account tier limits. |
 | Tick latency near 15 s | `latency_ms` on `/v1/tick` | Lower `VERA_TICK_DEADLINE_S` (7 → 5); check region RTT; confirm precompute is running on trigger push. |
 | Healthz counts wrong at warmup | compare with pushes in logs | `POST /v1/teardown`, confirm 0/0/0/0; check `VERA_RESTORE_WINDOW_S` didn't restore an old run. |
-| Disk full / DB error | `fly ssh console -C "df -h /data"` | Bot keeps serving from memory (write-through errors are logged, not fatal); extend the volume after the window. |
+| Disk full / DB error | `fly ssh console -C "df -h /data"`; logs show `store.write_failed` | Bot keeps serving from memory (write-through errors are logged, not fatal; crash recovery is degraded until fixed); extend the volume after the window. |

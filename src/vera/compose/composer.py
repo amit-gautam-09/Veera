@@ -136,13 +136,15 @@ def drop_to_pass(store: Store, prep: Prepared, opener: str, middle: str, ask: st
 STARTERS = {
     "here's", "here", "your", "you're", "you", "a", "one", "the", "that", "quick", "since", "it's", "is", "ek",
     "aapka", "aapke", "aapki", "aap", "pichhle", "kal", "plan", "urgent", "seasonal", "summer", "yeh", "abhi",
-    "we", "our", "thanks", "i'll", "calls", "views", "heads-up", "aaj", "agla", "wahi",
+    "we", "our", "thanks", "calls", "views", "heads-up", "aaj", "agla", "wahi",
 }  # fmt: skip
 
 
 def smooth(opener: str, text: str) -> str:
     """After 'Hi Priya,' continue in lower case when the next word is a common starter."""
     first = text.split(" ", 1)[0].strip(".,:;").lower() if text else ""
+    if first == "i" or first.startswith("i'"):  # "I", "I'll", "I'm" stay capitalised
+        return text
     if opener.rstrip().endswith(",") and first in STARTERS and text[:1].isupper():
         return text[0].lower() + text[1:]
     return text

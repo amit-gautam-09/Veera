@@ -95,12 +95,15 @@ Depends on M1 approval.
   root cause, wrong-typed nested fields, fixed at the `Ctx` boundary; 0 caught exceptions afterwards)
 
 ## M9 — Packaging and deployment (`feat/m9-release`)
-- [ ] `Dockerfile` (single worker, non-root, HEALTHCHECK), host config (per checkpoint decision)
-- [ ] `bot.py` (`compose(category, merchant, trigger, customer)`), `conversation_handlers.py`
-      (`respond(state, message)`), `scripts/generate_submission.py` → `submission.jsonl` (30 lines)
-- [ ] 1-page `README.md`; final docs pass; `CHANGELOG.md` release entry; version bump
+- [x] `Dockerfile` (single worker, non-root, HEALTHCHECK), `.dockerignore`, `fly.toml` (Fly.io assumed)
+- [x] `bot.py` (`compose(category, merchant, trigger, customer)`), `conversation_handlers.py`
+      (`respond(state, message)`), `scripts/generate_submission.py` → `submission.jsonl` (30 lines; regenerate
+      once an API key is set so it uses the LLM composer)
+- [x] 1-page `README.md`; final docs pass; `CHANGELOG.md` release entry
 - [ ] Optional: precomputed cache for the 100 base triggers
-- [ ] `scripts/smoke_public_url.sh`; simulator against the public URL
+- [x] `scripts/smoke_public_url.sh` (passes locally)
+- [ ] Deploy to the host, then smoke + simulator + harness against the public URL (needs Amit: host account,
+      `fly auth login`, `ANTHROPIC_API_KEY`, contact email)
 - **Accept**: pre-flight checklist in `11-deployment-runbook.md` §10 fully green.
 
 ## Cross-cutting gates (every PR)

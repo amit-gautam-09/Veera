@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import logging
+import sqlite3
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 from vera.domain.ids import utc_now_iso
+from vera.observability.log import log_event
 from vera.store.sqlite import Database
 
 SCOPES = ("category", "merchant", "customer", "trigger")
@@ -115,9 +119,8 @@ class Store:
         if current is not None and current.version >= version:
             return PutResult(accepted=False, current_version=current.version)
         stored_at = utc_now_iso()
-        if self.db is not None:  # persist first: a failed write leaves memory unchanged
-            self.db.put_context(scope, context_id, version, payload, stored_at)
         self.contexts[(scope, context_id)] = StoredContext(version, payload, stored_at)
+        self._persist(lambda db: db.put_context(scope, context_id, version, payload, stored_at))
         return PutResult(accepted=True, stored_at=stored_at)
 
     def get(self, scope: str, context_id: str | None) -> dict[str, Any] | None:
@@ -142,8 +145,7 @@ class Store:
     # --- conversations, suppressions, flags ------------------------------------------------------
     def save_conversation(self, conv: Conversation) -> None:
         self.conversations[conv.conversation_id] = conv
-        if self.db is not None:
-            self.db.put_conversation(conv.conversation_id, conv.merchant_id, conv.model_dump())
+        self._persist(lambda db: db.put_conversation(conv.conversation_id, conv.merchant_id, conv.model_dump()))
 
     def merchant_flags(self, merchant_id: str) -> MerchantFlags:
         if merchant_id not in self.flags:
@@ -152,25 +154,30 @@ class Store:
 
     def save_flags(self, flags: MerchantFlags) -> None:
         self.flags[flags.merchant_id] = flags
-        if self.db is not None:
-            self.db.put_flags(flags.merchant_id, flags.model_dump())
+        self._persist(lambda db: db.put_flags(flags.merchant_id, flags.model_dump()))
 
     def is_suppressed(self, key: str) -> bool:
         return key in self.suppressions
 
     def record_suppression(self, entry: dict[str, Any]) -> None:
         self.suppressions[entry["suppression_key"]] = entry
-        if self.db is not None:
-            self.db.put_suppression(entry["suppression_key"], entry["merchant_id"], entry)
+        self._persist(lambda db: db.put_suppression(entry["suppression_key"], entry["merchant_id"], entry))
 
     def cache_get(self, input_hash: str) -> dict[str, Any] | None:
         return self.compose_cache.get(input_hash)
 
     def cache_put(self, input_hash: str, output: dict[str, Any], prompt_version: str) -> None:
         self.compose_cache[input_hash] = output
-        if self.db is not None:
-            self.db.put_cache(input_hash, output, prompt_version)
+        self._persist(lambda db: db.put_cache(input_hash, output, prompt_version))
 
     def audit(self, endpoint: str, record: dict[str, Any]) -> None:
-        if self.db is not None:
-            self.db.audit(endpoint, record.get("trigger_id"), record.get("conversation_id"), record)
+        self._persist(lambda db: db.audit(endpoint, record.get("trigger_id"), record.get("conversation_id"), record))
+
+    def _persist(self, op: Callable[[Database], None]) -> None:
+        """Write-through is crash recovery, not the source of truth: a failed write is logged, never fatal."""
+        if self.db is None:
+            return
+        try:
+            op(self.db)
+        except sqlite3.Error as exc:
+            log_event("store.write_failed", level=logging.ERROR, error=str(exc))

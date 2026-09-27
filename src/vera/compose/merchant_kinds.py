@@ -101,13 +101,18 @@ def ratio_text(ctx: Ctx, ratio: float) -> str:
     return f"about {rounded:g}x"
 
 
-def profile_fix(ctx: Ctx) -> tuple[str, str, str]:
-    """(likely factor sentence, ask, deliverable) from the merchant's own signals."""
+def profile_fix(ctx: Ctx, lift: bool = False) -> tuple[str, str, str]:
+    """(framing sentence, ask, deliverable) from the merchant's own signals.
+
+    lift=False: a dip, so the signal is framed as a likely factor. lift=True: things are going well, so the same
+    signal is framed as the next lever, never as the cause of the growth.
+    """
+    lead_en, lead_hi = ("Next lever:", "Agla step:") if lift else ("One likely factor:", "Ek wajah ho sakti hai:")
     if ctx.has_signal("unverified_gbp") or ctx.identity.get("verified") is False:
         return (
             ctx.t(
-                "One likely factor: your Google profile is still unverified.",
-                "Ek wajah ho sakti hai: aapka Google profile abhi verified nahi hai.",
+                f"{lead_en} your Google profile is still unverified.",
+                f"{lead_hi} aapka Google profile abhi verified nahi hai.",
             ),
             ctx.t("Want me to start the verification for you today?", "Kya main aaj hi verification shuru kar doon?"),
             "Google profile verification steps",
@@ -115,7 +120,7 @@ def profile_fix(ctx: Ctx) -> tuple[str, str, str]:
     stale = next((s for s in ctx.signals if s.startswith("stale_posts")), None)
     if stale:
         return (
-            ctx.t(f"One likely factor: your {signal_label(stale)}.", f"Ek wajah: aapka {signal_label(stale)}."),
+            ctx.t(f"{lead_en} your {signal_label(stale)}.", f"{lead_hi} aapka {signal_label(stale)}."),
             ctx.t(
                 "Want me to draft a fresh Google post you can approve?",
                 "Kya main ek naya Google post draft kar doon jo aap approve kar sakein?",
@@ -234,7 +239,9 @@ def regulation_change(ctx: Ctx) -> Plan | Skip:
         return Skip(reason="no_hook:no_compliance_item")
     src, title = pretty_dates(source_of(item)), pretty_dates(str(item.get("title") or ""))
     deadline = fmt_date(ctx.payload.get("deadline_iso") or item.get("date"), with_year=True)
-    lines = [ctx.t(f"{src}: {title}.", f"{src} ka naya update: {title}."), first_sentence(item.get("summary"))]
+    topic = re.split(r"\s+(?:effective|from|w\.e\.f\.?|starting)\b", title, maxsplit=1)[0].strip().rstrip(".,")
+    when_line = ctx.t(f", effective {deadline}", f", {deadline} se laagu") if deadline else ""
+    lines = [ctx.t(f"{src}: {topic}{when_line}.", f"{src}: {topic}{when_line}."), first_sentence(item.get("summary"))]
     rest = sentences(item.get("summary"))
     if len(rest) > 1:
         lines.append(pretty_dates(rest[1]))
@@ -533,7 +540,7 @@ def perf_spike(ctx: Ctx) -> Plan | Skip:
         )
         deliverable = f"3-line enquiry reply featuring {offer}"
     else:
-        factor, ask, deliverable = profile_fix(ctx)
+        factor, ask, deliverable = profile_fix(ctx, lift=True)
         lines.append(factor)
     return plan(
         ctx,
@@ -993,29 +1000,29 @@ def ipl_match_today(ctx: Ctx) -> Plan | Skip:
     )
     weekend = p.get("is_weeknight") is False
     if item and weekend:
+        evidence = " ".join(sentences(item.get("summary"))[:2]) or str(item.get("title") or "")
+        lines.append(f"{source_of(item)}: {evidence}")
         lines.append(
             ctx.t(
-                f"{source_of(item)} shows weekend match nights pull dine-in covers down 12% while weeknight "
-                "matches add 18%, so a dine-in match promo tonight is likely to underperform.",
-                f"{source_of(item)} ke hisaab se weekend match nights par dine-in covers 12% girte hain, "
-                "weeknight matches par 18% badhte hain, toh aaj dine-in match promo se zyada fayda nahi hoga.",
+                "So a dine-in match promo tonight is likely to underperform.",
+                "Toh aaj raat dine-in match promo se zyada fayda nahi hoga.",
             )
         )
     delivery, dine_in = ctx.agg.get("delivery_orders_30d"), ctx.agg.get("dine_in_orders_30d")
-    if isinstance(delivery, int) and isinstance(dine_in, int) and delivery + dine_in:
+    offer = ctx.active_offers[0] if ctx.active_offers else None
+    if offer and day and weekend and "tue" in offer.lower():  # the merchant's own offer is the sharper point
+        lines.append(
+            ctx.t(
+                f"Your {offer} doesn't cover a {day}, so keep it for the weeknights.",
+                f"Aapka {offer} {day} ko valid nahi hai, use weeknights ke liye rakhiye.",
+            )
+        )
+    elif isinstance(delivery, int) and isinstance(dine_in, int) and delivery + dine_in:
         share = ctx.derive(round(100 * delivery / (delivery + dine_in)))
         lines.append(
             ctx.t(
                 f"Delivery already brings {share}% of your orders ({delivery} delivery vs {dine_in} dine-in in 30 days).",
                 f"Delivery pehle se aapke {share}% orders laati hai (30 din mein {delivery} delivery vs {dine_in} dine-in).",
-            )
-        )
-    offer = ctx.active_offers[0] if ctx.active_offers else None
-    if offer and day and weekend and "tue" in offer.lower():
-        lines.append(
-            ctx.t(
-                f"Your {offer} doesn't cover a {day}, so keep it for the weeknights.",
-                f"Aapka {offer} {day} ko valid nahi hai, use weeknights ke liye rakhiye.",
             )
         )
     ask = ctx.t(
@@ -1128,7 +1135,7 @@ def review_theme_emerged(ctx: Ctx) -> Plan | Skip:
     if not theme:
         ask = ctx.t(
             "What's the one thing customers mention most in your reviews lately, so I can draft replies you can reuse?",
-            "Aapke reviews mein customers aajkal sabse zyada kya likh rahe hain, taaki main reuse karne layak replies bana doon?",
+            "Customers aajkal sabse zyada kis baat ka zikr kar rahe hain, taaki main reuse karne layak replies bana doon?",
         )
         lead = ctx.t("One quick thing on your Google reviews.", "Aapke Google reviews ke baare mein ek chhoti baat.")
         return plan(

@@ -104,6 +104,8 @@ def test_validator_language_and_salutation() -> None:
         salutation_name="Meera",
     )
     assert any(v.startswith("V16") for v in wrong.violations)
+    mixed = _check("Aapke numbers mein 30% ki गिरावट aayi hai.", ask="Kya main plan bana doon?")
+    assert "V15:devanagari script" in mixed.violations
     action = _check("Yeh raha aapka draft.", ask="Would you like me to change it?", action_mode=True)
     assert any(v.startswith("V17") for v in action.violations)
 

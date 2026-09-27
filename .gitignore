@@ -38,3 +38,4 @@ judge_simulator.local.py
 Thumbs.db
 .idea/
 .vscode/
+.scratch/

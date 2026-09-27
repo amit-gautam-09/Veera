@@ -136,7 +136,7 @@ def drop_to_pass(store: Store, prep: Prepared, opener: str, middle: str, ask: st
 
 STARTERS = {
     "here's", "here", "your", "you're", "you", "a", "one", "the", "that", "quick", "since", "it's", "is", "ek",
-    "aapka", "aapke", "aapki", "aap", "pichhle", "kal", "plan", "urgent", "seasonal", "summer", "yeh", "abhi",
+    "aapka", "aapke", "aapki", "aap", "aapse", "pichhle", "kal", "plan", "urgent", "seasonal", "summer", "yeh", "abhi",
     "we", "our", "thanks", "calls", "views", "heads-up", "aaj", "agla", "wahi", "this", "it", "at", "there",
     "just", "as", "with", "in", "on", "for", "an", "from", "after", "today", "tonight", "good", "great", "happy",
     "that's", "we're", "we'd", "we've", "hope", "hamare", "hamara", "iss", "kya", "ab",
@@ -223,13 +223,10 @@ def user_prompt(store: Store, prep: Prepared, violations: list[str] | None = Non
 class Composer:
     """Tick-facing composer: cache → single-flight LLM task → validate/repair → deterministic fallback."""
 
-    def __init__(
-        self, store: Store, gateway: LLMGateway | None = None, repair_min_s: float = 3.0, llm_timeout_s: float = 6.0
-    ) -> None:
+    def __init__(self, store: Store, gateway: LLMGateway | None = None, repair_min_s: float = 3.0) -> None:
         self.store = store
         self.gateway = gateway
         self.repair_min_s = repair_min_s
-        self.llm_timeout_s = llm_timeout_s
         self._inflight: dict[str, asyncio.Task[ComposedMessage | None]] = {}
 
     @property
@@ -312,7 +309,7 @@ class Composer:
 
     async def _call(self, prep: Prepared, deadline: float, violations: list[str] | None = None) -> dict[str, Any]:
         assert self.gateway is not None
-        timeout = min(self.llm_timeout_s, deadline - time.monotonic())
+        timeout = deadline - time.monotonic()  # whole budget: queue wait must not eat a fixed per-call cap
         return await self.gateway.complete_json(
             COMPOSER_SYSTEM, user_prompt(self.store, prep, violations), COMPOSER_SCHEMA, timeout
         )

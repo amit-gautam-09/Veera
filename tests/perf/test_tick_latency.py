@@ -56,7 +56,7 @@ def _tick(composer: Composer, store: Any, ids: list[str], deadline_s: float) -> 
 
 def test_cold_tick_with_slow_llm_meets_budget() -> None:
     store, ids = _store(), _twenty_merchant_triggers()
-    composer = Composer(store, SlowGateway(delay=20.0), llm_timeout_s=6.0)
+    composer = Composer(store, SlowGateway(delay=20.0))
     count, elapsed = _tick(composer, store, ids, deadline_s=2.0)
     assert elapsed < COLD_BUDGET_S and elapsed < 3.0
     assert 15 <= count <= 20  # every composable trigger still gets a (fallback) action

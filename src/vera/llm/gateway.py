@@ -3,8 +3,9 @@
 - AnthropicGateway: Claude via the official SDK (structured output, thinking disabled).
 - OpenAICompatibleGateway: any OpenAI-compatible endpoint via the official `openai` SDK. Used for Google Gemini's
   free tier (base URL https://generativelanguage.googleapis.com/v1beta/openai/), also fits Cerebras / Mistral.
-Both: no SDK retries, per-call timeout = time left before the caller's deadline, a concurrency cap, and every
-failure mapped to LLMUnavailable so the caller falls back to deterministic wording at once.
+Both: no SDK retries, a concurrency cap, and every failure mapped to LLMUnavailable so the caller falls back to
+deterministic wording at once. `timeout_s` is the caller's whole budget, queue wait included; the HTTP call itself
+is capped at `call_timeout_s` so one hung request cannot hold a concurrency slot for the whole budget.
 """
 
 from __future__ import annotations
@@ -50,8 +51,11 @@ def _parse_object(text: str) -> dict[str, Any]:
 
 
 class AnthropicGateway:
-    def __init__(self, api_key: str, model: str, max_concurrency: int, effort: str | None = None) -> None:
+    def __init__(
+        self, api_key: str, model: str, max_concurrency: int, effort: str | None = None, call_timeout_s: float = 6.0
+    ) -> None:
         self.model = model
+        self.call_timeout_s = call_timeout_s
         self.effort = effort
         self._client = anthropic.AsyncAnthropic(api_key=api_key, max_retries=0)
         self._sem = asyncio.Semaphore(max_concurrency)
@@ -75,7 +79,7 @@ class AnthropicGateway:
                     "messages": [{"role": "user", "content": user}],
                     "thinking": {"type": "disabled"},
                     "output_config": output_config,
-                    "timeout": remaining,
+                    "timeout": min(remaining, self.call_timeout_s),
                 }
                 response = cast(Message, await self._client.messages.create(**params))
         except anthropic.BadRequestError as exc:
@@ -106,13 +110,20 @@ class AnthropicGateway:
 
 class OpenAICompatibleGateway:
     def __init__(
-        self, api_key: str, model: str, base_url: str, max_concurrency: int, reasoning_effort: str | None = None
+        self,
+        api_key: str,
+        model: str,
+        base_url: str,
+        max_concurrency: int,
+        reasoning_effort: str | None = None,
+        call_timeout_s: float = 6.0,
     ) -> None:
         import openai  # imported lazily: only needed when this provider is configured
 
         self._openai = openai
         self.model = model
         self.reasoning_effort = reasoning_effort
+        self.call_timeout_s = call_timeout_s
         self._client = openai.AsyncOpenAI(api_key=api_key, base_url=base_url, max_retries=0)
         self._sem = asyncio.Semaphore(max_concurrency)
 
@@ -133,7 +144,7 @@ class OpenAICompatibleGateway:
                         "type": "json_schema",
                         "json_schema": {"name": "vera_output", "strict": True, "schema": schema},
                     },
-                    "timeout": remaining,
+                    "timeout": min(remaining, self.call_timeout_s),
                 }
                 if self.reasoning_effort:
                     params["reasoning_effort"] = self.reasoning_effort
@@ -172,10 +183,19 @@ def make_gateway(settings: Settings) -> LLMGateway | None:
     if settings.llm_provider == "anthropic":
         assert settings.anthropic_api_key
         return AnthropicGateway(
-            settings.anthropic_api_key, settings.composer_model, settings.llm_max_concurrency, settings.llm_effort
+            settings.anthropic_api_key,
+            settings.composer_model,
+            settings.llm_max_concurrency,
+            settings.llm_effort,
+            settings.llm_timeout_s,
         )
     assert settings.llm_api_key
     base_url = settings.llm_base_url or GEMINI_BASE_URL
     return OpenAICompatibleGateway(
-        settings.llm_api_key, settings.composer_model, base_url, settings.llm_max_concurrency, settings.llm_effort
+        settings.llm_api_key,
+        settings.composer_model,
+        base_url,
+        settings.llm_max_concurrency,
+        settings.llm_effort,
+        settings.llm_timeout_s,
     )

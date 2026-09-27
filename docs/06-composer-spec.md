@@ -101,7 +101,7 @@ phrasing") + for repairs, the violation list.
 | sampling | none | `temperature`/`top_p` are rejected (400) on Sonnet 5; determinism via cache |
 | output | `output_config={"format": {"type": "json_schema", "schema": COMPOSER_SCHEMA}}` | parseable by construction |
 | max_tokens | 600 | message ≈ 80–150 tokens; headroom for Hinglish |
-| timeout | min(`VERA_LLM_TIMEOUT_S`, deadline remaining) | never outlive the tick |
+| timeout | deadline remaining, queue wait included; the HTTP call itself is capped at `VERA_LLM_TIMEOUT_S` once a concurrency slot is free | never outlive the tick; a queue must not eat a fixed per-call cap (bulk precompute died at 6 s despite its 25 s budget) |
 | retries | 0 | the deadline, not the SDK, decides |
 
 Effort (`output_config.effort`) is measured in M4 (`low` vs default) and fixed in the prompt-version notes.
@@ -145,7 +145,7 @@ thousands separators (`2,410` / `2,100` / Indian `1,20,000`), `lakh` → ×10000
 | V12 | Re-introduction | after turn 1 of a conversation: no "this is Vera", "Vera here", "I am Vera" | — |
 | V13 | Repetition | normalised body hash not in the merchant's `sent_body_hashes`; also no sentence identical to a prior body's sentence | merchant flags |
 | V14 | Plagiarism | `difflib.SequenceMatcher` ratio vs every case-study body ≤ 0.6 | `reference/challenge/examples/case-studies.md` |
-| V15 | Language | `hinglish` directive: at least two Hindi function words in Roman script (`hai, hain, ke, ki, kar, aap, aapke, mein, toh, bhi, nahi, kya`); `english`: none of the unambiguous ones (`hai, hain, aap, aapke, nahi, kya`) | — |
+| V15 | Language | `hinglish` directive: at least two Hindi function words in Roman script (`hai, hain, ke, ki, kar, aap, aapke, mein, toh, bhi, nahi, kya`); `english`: none of the unambiguous ones (`hai, hain, aap, aapke, nahi, kya`); any language: no Devanagari characters (all output is Roman script) | — |
 | V16 | Salutation | opener contains the decided salutation name; no "Dr. Dr." | decision |
 
 Violations are reported as codes (`V6:31`, `V11:Lancet`) in logs and in the repair prompt.

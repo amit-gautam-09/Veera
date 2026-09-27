@@ -3,6 +3,10 @@
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+### Fixed (M10 polish)
+- "I'll" was lowercased after a greeting; growing metrics framed an unverified profile as the cause of the growth
+  (now "next step"); regulation messages repeated title and date; the IPL message hardcoded the sample digest's
+  12%/18% (now quotes whichever IPL item is in context) and is shorter; thin review ask no longer repeats itself.
 ### Added
 - M9 packaging: `Dockerfile`, `.dockerignore`, `fly.toml`, `bot.py`, `conversation_handlers.py`,
   `scripts/generate_submission.py` + `submission.jsonl` (30 lines), `scripts/smoke_public_url.sh`, 1-page README.

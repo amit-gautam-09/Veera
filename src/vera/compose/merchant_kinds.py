@@ -1131,11 +1131,12 @@ def review_theme_emerged(ctx: Ctx) -> Plan | Skip:
             "What's the one thing customers mention most in your reviews lately, so I can draft replies you can reuse?",
             "Aapke reviews mein customers aajkal sabse zyada kya likh rahe hain, taaki main reuse karne layak replies bana doon?",
         )
+        lead = ctx.t("One quick thing on your Google reviews.", "Aapke Google reviews ke baare mein ek chhoti baat.")
         return plan(
             ctx,
             "reputation",
             "open_ended",
-            [],
+            [lead],
             ask,
             [],
             ["asking the merchant", "reciprocity"],

@@ -4,6 +4,10 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M5 planner invariants P1–P8 as hypothesis property tests.
+### Fixed
+- Empty `middle` produced a `template_params` entry that was empty (invalid for WhatsApp templates) and a
+  double space; V1 now requires all three parts and the thin review handler has a lead sentence.
 - M4 LLM composer: `AnthropicGateway` (Sonnet 5, thinking disabled, structured output, no retries,
   concurrency cap), `composer_v1` prompt, content-hashed persistent cache, single-flight precompute on trigger
   push and on dependent version bumps, drop-sentence and one-call repair before the deterministic fallback;

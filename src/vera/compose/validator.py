@@ -79,7 +79,7 @@ def validate(
     check = Check()
     body = f"{opener} {middle} {ask}".strip()
     # V1 structure
-    if not opener.strip() or not ask.strip():
+    if not opener.strip() or not middle.strip() or not ask.strip():  # WhatsApp template params can't be empty
         check.add("V1", "empty part")
     if len(body) > MAX_BODY_CHARS:
         check.add("V1", "too long")

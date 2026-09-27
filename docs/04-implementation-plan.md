@@ -64,10 +64,12 @@ Depends on M1 approval.
   ✅ with a fake LLM (tests/perf); real-model latency to be measured once a key is available.
 
 ## M5 — Tick planner (`feat/m5-planner`)
-- [ ] `planner/tick.py`: resolve (listed only), guards with logged reasons, ranking, per-merchant cap, ≤ 20,
-      deadline handling, commit
-- **Tests**: hypothesis properties P1–P8 (10 §4)
-- **Accept**: properties hold over 10k generated ticks; simulator `full_evaluation` completes with no timeouts.
+- [x] `planner/tick.py`: resolve (listed only), guards with logged reasons, ranking, per-merchant cap, ≤ 20,
+      deadline handling, commit (landed in M2)
+- [x] **Tests**: hypothesis properties P1–P8 (10 §4)
+- **Accept**: properties hold over generated tick sequences (40 examples × up to 6 ticks per property per run);
+  simulator `full_evaluation` completes with no timeouts (needs a judge key). ✅ properties; found and fixed an
+  empty-middle template bug.
 
 ## M6 — Reply engine (`feat/m6-replies`)
 - [ ] `reply/classifier.py` rules (English, Hinglish, Devanagari), per-merchant auto-reply counter

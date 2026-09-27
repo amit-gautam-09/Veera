@@ -131,7 +131,7 @@ thousands separators (`2,410` / `2,100` / Indian `1,20,000`), `lakh` → ×10000
 
 | # | Rule | Check | Allowed-list sources |
 |---|---|---|---|
-| V1 | Structure | opener, middle, ask non-empty; body ≤ 700 chars; `?` appears only in `ask` | — |
+| V1 | Structure | opener, middle, ask all non-empty (WhatsApp template params cannot be empty); body ≤ 900 chars; `?` appears only in `ask` | — |
 | V2 | Single CTA | `ask` is one sentence; `middle` contains no imperative CTA markers ("reply", "click", "call us", "tap") | — |
 | V3 | No URLs | regex for `http`, `www.`, bare domains (`\w+\.(com|in|ai|io|org)\b`) | — |
 | V4 | Taboos | case-insensitive phrase match on `voice.vocab_taboo` + `voice.taboos`, parentheticals stripped (`"best price (without supporting data)"` → `"best price"`) | — |

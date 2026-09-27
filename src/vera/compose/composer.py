@@ -149,10 +149,7 @@ def smooth(opener: str, text: str) -> str:
 
 
 def assemble(prep: Prepared, opener: str, middle: str, ask: str, path: str) -> ComposedMessage:
-    if middle:
-        middle = smooth(opener, middle)
-    else:
-        ask = smooth(opener, ask)
+    middle = smooth(opener, middle)  # never empty: V1 requires all three template params
     body = " ".join(f"{opener} {middle} {ask}".split())
     return ComposedMessage(
         body=body,

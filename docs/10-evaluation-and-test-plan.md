@@ -256,8 +256,7 @@ Closer to the real judge than the simulator.
 ## 13. Score tracking
 | Date | Commit | prompt_version | Sim avg (/50) | Harness avg (/50) | Grounding findings | p99 tick (s) | Notes |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
-| | | | | | | | |
+| 2026-09-27 | ba34655+M7 | composer_v1 (LLM off) | n/a (no judge key) | n/a (no judge key) | 0 / 36 actions | 0.05 | Offline harness: 38 cases → 36 actions (2 held by per-merchant cap), 0 shape errors, 0 URLs, 0 repeats, max case-study similarity 0.381; simulator `all` scenarios all PASS |
 | | | | | | | | |
 
 ## 14. Commands

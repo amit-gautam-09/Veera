@@ -4,6 +4,9 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M7 evaluation: independent grounding auditor (`eval/grounding.py`) with a fabrication negative control,
+  extended harness (`python -m eval.harness`) with offline checks and optional LLM judge + personas, adaptation
+  tests for new digest items, perf updates and injected customers.
 - M6 reply engine: rule classifier (English/Hinglish/Devanagari), state machine per `docs/09` (auto-reply
   ladder counted per merchant across conversation ids, opt-out/hostile exits with suppression, action-mode
   deliverables per trigger kind, off-topic decline + redirect, defer waits, soft-no, slot confirmation, reply

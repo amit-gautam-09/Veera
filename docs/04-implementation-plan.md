@@ -80,10 +80,12 @@ Depends on M1 approval.
   + regression; official simulator `all`: every scenario PASS, auto-reply ends on the 3rd canned message)
 
 ## M7 — Evaluation harness (`feat/m7-eval`)
-- [ ] `eval/harness.py`: expanded dataset, incremental trigger pushes, persona-played reply turns, full-context
-      LLM judge, grounding auditor, similarity checker, repetition checker, adaptation test, latency capture
-- [ ] Results under `eval/results/<timestamp>/`; score row appended to `10` §13
+- [x] `eval/harness.py`: expanded dataset, incremental trigger pushes, persona-played reply turns, full-context
+      LLM judge, grounding auditor (`eval/grounding.py`), similarity checker, repetition checker, latency capture;
+      adaptation tests in `tests/replay/test_adaptation.py`
+- [x] Results under `eval/results/<timestamp>/`; score row appended to `10` §13
 - **Accept**: harness average ≥ 45/50; simulator `full_evaluation` average ≥ 45/50; no similarity above 0.6.
+  Offline parts ✅ (0 findings, similarity 0.381); judge scores pending an API key.
 
 ## M8 — Hardening (`feat/m8-hardening`)
 - [ ] `scripts/soak.py` 10 req/s for 45 min; chaos cases (LLM timeouts, 429s, malformed contexts, unknown

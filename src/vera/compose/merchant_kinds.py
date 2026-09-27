@@ -1006,11 +1006,10 @@ def ipl_match_today(ctx: Ctx) -> Plan | Skip:
         share = ctx.derive(round(100 * delivery / (delivery + dine_in)))
         lines.append(
             ctx.t(
-                f"Delivery already brings {share}% of your orders ({delivery} of {delivery + dine_in}).",
-                f"Delivery pehle se aapke {share}% orders laati hai ({delivery} of {delivery + dine_in}).",
+                f"Delivery already brings {share}% of your orders ({delivery} delivery vs {dine_in} dine-in in 30 days).",
+                f"Delivery pehle se aapke {share}% orders laati hai (30 din mein {delivery} delivery vs {dine_in} dine-in).",
             )
         )
-        ctx.derive(delivery + dine_in)
     offer = ctx.active_offers[0] if ctx.active_offers else None
     if offer and day and weekend and "tue" in offer.lower():
         lines.append(

@@ -123,7 +123,7 @@
     "trigger_id": "trg_010_ipl_match_delhi",
     "cta": "binary_yes_no",
     "send_as": "vera",
-    "body": "Suresh ji, aaj raat 7:30pm par Arun Jaitley Stadium mein DC vs MI hai. magicpin order data, Apr 2026 ke hisaab se weekend match nights par dine-in covers 12% girte hain, weeknight matches par 18% badhte hain, toh aaj dine-in match promo se zyada fayda nahi hoga. Delivery pehle se aapke 65% orders laati hai (180 of 275). Aapka Buy 1 Pizza Get 1 Free (Tue-Thu) Sunday ko valid nahi hai, use weeknights ke liye rakhiye. Kya main aaj raat ke liye ek delivery-night post draft kar doon?"
+    "body": "Suresh ji, aaj raat 7:30pm par Arun Jaitley Stadium mein DC vs MI hai. magicpin order data, Apr 2026 ke hisaab se weekend match nights par dine-in covers 12% girte hain, weeknight matches par 18% badhte hain, toh aaj dine-in match promo se zyada fayda nahi hoga. Delivery pehle se aapke 65% orders laati hai (30 din mein 180 delivery vs 95 dine-in). Aapka Buy 1 Pizza Get 1 Free (Tue-Thu) Sunday ko valid nahi hai, use weeknights ke liye rakhiye. Kya main aaj raat ke liye ek delivery-night post draft kar doon?"
   },
   "T22": {
     "trigger_id": "trg_012_milestone_mylari",

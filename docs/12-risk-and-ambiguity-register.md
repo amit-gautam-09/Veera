@@ -47,6 +47,7 @@ IDs are stable; other docs cite them. **Status**: `resolved` (decided, reflected
 | R-30 | Anthropic rate limits with 20 parallel composes + reply calls | Concurrency cap 10 (configurable); 429 → immediate fallback; precompute on push spreads load | watch |
 | R-31 | LLM outage during the test window | Deterministic fallback composer and replies; `VERA_LLM_ENABLED=false` kill switch | resolved |
 | R-32 | LLM cost overrun | Token usage logged per call; concurrency cap; console spend limit (11) | watch |
+| R-52 | Free-tier model churn and rate limits (Gemini) | Model configurable; 429/503 fall back to deterministic wording; concurrency 4; re-probe models before the judging window | watch |
 | R-33 | Separate classifier model | Dropped: rules classify; one merged reply call classifies-and-composes when rules are inconclusive (saves a round trip) | resolved |
 
 ## D. State, persistence, operations
@@ -74,7 +75,7 @@ IDs are stable; other docs cite them. **Status**: `resolved` (decided, reflected
 | ID | Question | Recommendation | Status |
 |---|---|---|---|
 | R-47 | Hosting provider | Fly.io (always-on machine, volume, remote builds, `bom` region) — see 11 | open |
-| R-48 | Anthropic API key and spend cap for dev + eval + test window | One key in `.env` locally and in host secrets; set a console spend limit | open |
+| R-48 | Anthropic API key and spend cap for dev + eval + test window | No Anthropic key; free Gemini key used instead (ADR-012). Key lives only in the gitignored `.env` and host secrets; it was pasted in chat once, so rotate it after the challenge | resolved |
 | R-49 | Public repo contains the challenge package and the dossier | Challenge package is public anyway; confirm the dossier may be public or move it out of the repo | open |
 | R-50 | `/v1/metadata` identity | `team_name` and `team_members` = "Amit Gautam"; contact email to confirm | open |
 | R-51 | Restore-window persistence instead of unconditional reload (R-35) | Keep the restore window | open |

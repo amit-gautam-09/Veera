@@ -12,6 +12,13 @@ from dotenv import load_dotenv
 from vera import __version__
 
 DEFAULT_COMPOSER_MODEL = "claude-sonnet-5"
+# provider -> (default model, default effort). Gemini: the only free-tier Flash model that answered reliably
+# and fast enough for the 7 s tick deadline when measured on 2026-09-27 (ADR-012).
+PROVIDER_DEFAULTS = {
+    "anthropic": (DEFAULT_COMPOSER_MODEL, None),
+    "gemini": ("gemini-3.5-flash-lite", "low"),
+    "openai_compatible": ("", None),
+}
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -36,6 +43,9 @@ def _now_iso() -> str:
 @dataclass(frozen=True)
 class Settings:
     anthropic_api_key: str | None = None
+    llm_provider: str = "anthropic"  # anthropic | gemini | openai_compatible
+    llm_api_key: str | None = None  # key for non-Anthropic providers
+    llm_base_url: str | None = None  # OpenAI-compatible base URL (gemini default built in)
     llm_enabled: bool = True
     composer_model: str = DEFAULT_COMPOSER_MODEL
     llm_max_concurrency: int = 10
@@ -55,20 +65,28 @@ class Settings:
 
     @property
     def llm_active(self) -> bool:
-        return self.llm_enabled and bool(self.anthropic_api_key)
+        if not self.llm_enabled or not self.composer_model:
+            return False
+        key = self.anthropic_api_key if self.llm_provider == "anthropic" else self.llm_api_key
+        return bool(key)
 
 
 def load_settings() -> Settings:
     load_dotenv(override=False)  # real env vars win over .env
     members = os.getenv("VERA_TEAM_MEMBERS", "Amit Gautam")
     db_path = os.getenv("VERA_DB_PATH", "data/vera.db")
+    provider = (os.getenv("VERA_LLM_PROVIDER") or "anthropic").strip().lower()
+    default_model, default_effort = PROVIDER_DEFAULTS.get(provider, ("", None))
     return Settings(
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
+        llm_provider=provider,
+        llm_api_key=os.getenv("VERA_LLM_API_KEY") or None,
+        llm_base_url=os.getenv("VERA_LLM_BASE_URL") or None,
         llm_enabled=_bool("VERA_LLM_ENABLED", True),
-        composer_model=os.getenv("VERA_COMPOSER_MODEL") or DEFAULT_COMPOSER_MODEL,
+        composer_model=os.getenv("VERA_COMPOSER_MODEL") or default_model,
         llm_max_concurrency=_int("VERA_LLM_MAX_CONCURRENCY", 10),
         llm_timeout_s=_float("VERA_LLM_TIMEOUT_S", 6.0),
-        llm_effort=os.getenv("VERA_LLM_EFFORT") or None,
+        llm_effort=os.getenv("VERA_LLM_EFFORT") or default_effort,
         tick_deadline_s=_float("VERA_TICK_DEADLINE_S", 7.0),
         reply_deadline_s=_float("VERA_REPLY_DEADLINE_S", 5.0),
         repair_min_remaining_s=_float("VERA_REPAIR_MIN_REMAINING_S", 3.0),

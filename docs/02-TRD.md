@@ -263,8 +263,9 @@ skipped rather than sent. Also used when `ANTHROPIC_API_KEY` is unset or
 - Deadline 5 s (`VERA_REPLY_DEADLINE_S`).
 
 ### 4.12 LLMGateway (`llm/gateway.py`)
-- `Protocol` with `complete_json(system, user, schema, timeout_s) -> dict`; one implementation over
-  `anthropic.AsyncAnthropic(max_retries=0)`.
+- `Protocol` with `complete_json(system, user, schema, timeout_s) -> dict`; two implementations:
+  `AnthropicGateway` (`anthropic.AsyncAnthropic(max_retries=0)`) and `OpenAICompatibleGateway` (`openai.AsyncOpenAI`,
+  used for free-tier Gemini, ADR-012), chosen by `make_gateway(settings)`.
 - A semaphore caps concurrent calls (`VERA_LLM_MAX_CONCURRENCY`, default 10). Error mapping: timeout,
   `RateLimitError`, `APIStatusError ≥ 500`, `APIConnectionError` → `LLMUnavailable` (caller falls back at once);
   `BadRequestError` → logged as a bug, fallback. No retries inside a request deadline.
@@ -351,9 +352,13 @@ Priority: environment variables → `.env` file → defaults below.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | — | Enables the LLM composer; unset → fallback-only mode |
+| `VERA_LLM_PROVIDER` | `anthropic` | `anthropic`, `gemini` (free tier, ADR-012) or `openai_compatible` |
+| `ANTHROPIC_API_KEY` | — | Key for the `anthropic` provider; unset → deterministic mode |
+| `VERA_LLM_API_KEY` | — | Key for `gemini` / `openai_compatible` |
+| `VERA_LLM_BASE_URL` | Gemini's OpenAI-compatible URL | Endpoint for `openai_compatible` |
 | `VERA_LLM_ENABLED` | `true` | Kill switch for LLM calls |
-| `VERA_COMPOSER_MODEL` | `claude-sonnet-5` | Model for tick and reply composition |
+| `VERA_COMPOSER_MODEL` | provider default (`claude-sonnet-5` / `gemini-3.5-flash-lite`) | Model for tick and reply composition |
+| `VERA_LLM_EFFORT` | provider default (gemini: `low`) | Anthropic `output_config.effort` / OpenAI-compatible `reasoning_effort` |
 | `VERA_LLM_MAX_CONCURRENCY` | `10` | Concurrent LLM calls |
 | `VERA_LLM_TIMEOUT_S` | `6` | Upper bound per LLM call (further capped by the deadline) |
 | `VERA_TICK_DEADLINE_S` | `7` | Tick hard deadline |

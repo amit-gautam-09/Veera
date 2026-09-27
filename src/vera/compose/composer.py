@@ -115,6 +115,7 @@ def check_parts(store: Store, prep: Prepared, opener: str, middle: str, ask: str
         language=prep.plan.language,
         salutation_name=salutation_name(prep),
         prior_body_hashes=flags.sent_body_hashes if flags else None,
+        business_name=prep.ctx.business if prep.plan.send_as == "merchant_on_behalf" else None,
     )
 
 
@@ -136,7 +137,9 @@ def drop_to_pass(store: Store, prep: Prepared, opener: str, middle: str, ask: st
 STARTERS = {
     "here's", "here", "your", "you're", "you", "a", "one", "the", "that", "quick", "since", "it's", "is", "ek",
     "aapka", "aapke", "aapki", "aap", "pichhle", "kal", "plan", "urgent", "seasonal", "summer", "yeh", "abhi",
-    "we", "our", "thanks", "calls", "views", "heads-up", "aaj", "agla", "wahi",
+    "we", "our", "thanks", "calls", "views", "heads-up", "aaj", "agla", "wahi", "this", "it", "at", "there",
+    "just", "as", "with", "in", "on", "for", "an", "from", "after", "today", "tonight", "good", "great", "happy",
+    "that's", "we're", "we'd", "we've", "hope", "hamare", "hamara", "iss", "kya", "ab",
 }  # fmt: skip
 
 
@@ -202,7 +205,7 @@ def user_prompt(store: Store, prep: Prepared, violations: list[str] | None = Non
     return build_user_prompt(
         category=ctx.category,
         audience=audience,
-        language=plan.language,
+        language="english" if plan.language == "english_light_hindi" else plan.language,  # no stray Hindi
         family=plan.family,
         opener=plan.opener,
         primary=plan.primary,

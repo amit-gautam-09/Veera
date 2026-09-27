@@ -4,6 +4,10 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 ### Added
+- M2 contract skeleton: all six endpoints per `docs/05-api-contract.md` (400/409/500 KB, no 422/5xx),
+  versioned context store with SQLite write-through and a restore window, tick planner (guards, ranking,
+  per-merchant cap, deadline), stub composer and reply handler, `scripts/run_simulator.py` wrapper,
+  contract and persistence tests.
 - Repository bootstrap: reference package extracted to `reference/challenge/`, expanded dataset generated
   (5 categories, 50 merchants, 200 customers, 100 triggers, 30 test pairs), tooling (`pyproject.toml`, ruff,
   mypy, pytest, pre-commit), `.env.example`, `CLAUDE.md`.

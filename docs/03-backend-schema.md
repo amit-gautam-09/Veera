@@ -255,14 +255,15 @@ class AuditRecord(BaseModel):
 ```
 
 ## 4. SQLite DDL
+Relational columns only where we query; nested entities (conversation with its turns, merchant flags,
+suppression entry, audit record) are stored as JSON documents serialised from the Pydantic models in §3.
+Source of truth: `src/vera/store/sqlite.py`.
+
 ```sql
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous = NORMAL;
 
-CREATE TABLE IF NOT EXISTS meta (
-  key TEXT PRIMARY KEY, value TEXT NOT NULL            -- 'last_write_at', 'schema_version'
-);
-
+CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS contexts (
   scope TEXT NOT NULL CHECK (scope IN ('category','merchant','customer','trigger')),
   context_id TEXT NOT NULL,
@@ -271,66 +272,40 @@ CREATE TABLE IF NOT EXISTS contexts (
   stored_at TEXT NOT NULL,
   PRIMARY KEY (scope, context_id)
 );
-
 CREATE TABLE IF NOT EXISTS conversations (
   conversation_id TEXT PRIMARY KEY,
-  merchant_id TEXT, customer_id TEXT, trigger_id TEXT, kind TEXT, family TEXT,
-  state TEXT NOT NULL,
-  promised_deliverable TEXT,
-  soft_no_count INTEGER NOT NULL DEFAULT 0,
-  last_inbound_language TEXT,
-  created_from TEXT NOT NULL,
-  created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  merchant_id TEXT,
+  state_json TEXT NOT NULL,
+  updated_at REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_conversations_merchant ON conversations(merchant_id);
-
-CREATE TABLE IF NOT EXISTS turns (
-  conversation_id TEXT NOT NULL REFERENCES conversations(conversation_id),
-  seq INTEGER NOT NULL,
-  turn_number INTEGER, role TEXT NOT NULL, body TEXT NOT NULL, ts TEXT,
-  intent TEXT, action TEXT,
-  request_digest TEXT,                                  -- sha256(turn_number|message) for replay detection
-  response_json TEXT,                                   -- stored response for replays
-  PRIMARY KEY (conversation_id, seq)
-);
-CREATE INDEX IF NOT EXISTS idx_turns_digest ON turns(conversation_id, request_digest);
-
 CREATE TABLE IF NOT EXISTS suppressions (
   suppression_key TEXT PRIMARY KEY,
-  merchant_id TEXT NOT NULL, customer_id TEXT, trigger_id TEXT NOT NULL,
-  conversation_id TEXT NOT NULL, sent_at TEXT NOT NULL
+  merchant_id TEXT NOT NULL,
+  entry_json TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_suppressions_merchant ON suppressions(merchant_id);
-
 CREATE TABLE IF NOT EXISTS merchant_flags (
   merchant_id TEXT PRIMARY KEY,
-  opted_out INTEGER NOT NULL DEFAULT 0, opted_out_at TEXT,
-  auto_reply_counts_json TEXT NOT NULL DEFAULT '{}',
-  unanswered_proactive INTEGER NOT NULL DEFAULT 0,
-  sent_body_hashes_json TEXT NOT NULL DEFAULT '[]',
-  updated_at TEXT NOT NULL
+  flags_json TEXT NOT NULL,
+  updated_at REAL NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS compose_cache (
   input_hash TEXT PRIMARY KEY,
   output_json TEXT NOT NULL,
   prompt_version TEXT NOT NULL,
-  model TEXT NOT NULL,
-  created_at TEXT NOT NULL
+  created_at REAL NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ts TEXT NOT NULL, endpoint TEXT NOT NULL,
-  conversation_id TEXT, trigger_id TEXT, input_hash TEXT,
-  prompt_version TEXT, path TEXT, violations_json TEXT,
-  latency_ms INTEGER, tokens_in INTEGER, tokens_out INTEGER,
-  output_json TEXT
+  ts REAL NOT NULL,
+  endpoint TEXT NOT NULL,
+  trigger_id TEXT,
+  conversation_id TEXT,
+  record_json TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_audit_trigger ON audit_log(trigger_id);
 ```
-Every write also sets `meta.last_write_at`; the restore window (TRD §8) reads it on boot. Teardown runs
-`DELETE FROM` on every table except `meta.schema_version`.
+Every write also sets `meta.last_write_at` (epoch seconds); the restore window (TRD §8) reads it on boot.
+Teardown and an out-of-window boot run `DELETE FROM` on every table and drop `last_write_at`.
 
 ## 5. Entity relationships
 ```mermaid

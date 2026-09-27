@@ -25,20 +25,21 @@ flowchart LR
 - [x] 00 digest, 01 PRD, 02 TRD, 03 schema, 04 plan, 05 API contract + `openapi.yaml`
 - [x] 06 composer spec, 07 trigger playbook, 08 voice guide, 09 conversation policy
 - [x] 10 evaluation and test plan, 11 deployment runbook, 12 risk register, ADR-001…011
-- [ ] PR `docs/m1-foundation → main` opened; review checkpoint with Amit
+- [x] PR `docs/m1-foundation → main` opened (#1, merged); review checkpoint with Amit
 - **Accept**: every B1–B11 and N-finding has a register entry and a TRD resolution; no case-study text in docs.
 
 ## M2 — Contract-correct skeleton (`feat/m2-skeleton`)
 Depends on M1 approval.
-- [ ] `config.py` (env → settings, `.env` via python-dotenv)
-- [ ] `api/schemas.py` + `app.py`: all six endpoints, 500 KB guard on raw bytes, 400/409 semantics, custom
+- [x] `config.py` (env → settings, `.env` via python-dotenv)
+- [x] `api/schemas.py` + `app.py`: all six endpoints, 500 KB guard on raw bytes, 400/409 semantics, custom
       validation handler (no 422), route guards (no 5xx), healthz counts from memory, metadata from env
-- [ ] `store/state.py` + `store/sqlite.py`: versioned ContextStore, conversations, suppressions, flags,
+- [x] `store/state.py` + `store/sqlite.py`: versioned ContextStore, conversations, suppressions, flags,
       write-through, restore window, teardown wipe
-- [ ] Stub composer: schema-valid actions from a fixed per-family template (placeholder for M3)
-- [ ] `scripts/run_simulator.py` wrapper (env config, UTF-8 mode, first-text-block patch, teardown first)
+- [x] Stub composer: schema-valid actions from a fixed per-family template (placeholder for M3)
+- [x] `scripts/run_simulator.py` wrapper (env config, UTF-8 mode, first-text-block patch, teardown first)
 - **Tests**: contract suite (every `api-call-examples.md` case), restore-window unit tests
-- **Accept**: contract suite green; simulator `warmup` and `all` run clean against localhost.
+- **Accept**: contract suite green; simulator `warmup` and `all` run clean against localhost. ✅ (planner guards,
+  ranking and per-merchant cap landed here too; M5 adds the property tests)
 
 ## M3 — Fact sheet and deterministic fallback (`feat/m3-facts-fallback`)
 - [ ] `compose/numbers.py` normalisation; `compose/facts.py` FactSheetBuilder with derived facts and the

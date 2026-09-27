@@ -1,7 +1,7 @@
 # Session record — Veera (Vera bot, magicpin AI Challenge)
 
 **Last updated**: 2026-09-27 (IST) · **Owner**: Amit Gautam · **Repo**: https://github.com/amit-gautam-09/Veera
-**Resume branch**: `feat/m11-gemini` (all work committed and pushed; PR #11)
+**Resume branch**: `feat/m11-gemini` (all work committed and pushed; PR #12)
 
 Read this first when resuming, then `CLAUDE.md` (commands, map, gotchas). No secrets are in this file.
 
@@ -32,9 +32,9 @@ judge. It could not complete:
 | M8 | Chaos, restart-recovery, soak script; context sanitiser | #8 |
 | M9 | Dockerfile, fly.toml, bot.py, conversation_handlers.py, submission.jsonl, smoke script, README | #9 |
 | M10 | Deterministic wording polish (5 fixes) | #10 |
-| M11 | **Free Gemini provider** (`OpenAICompatibleGateway`, `make_gateway`), prompt `composer_v3`, V18, ADR-012; judge retries in simulator wrapper | #11 |
+| M11 | **Free Gemini provider** (`OpenAICompatibleGateway`, `make_gateway`), prompt `composer_v3`, V18, ADR-012; judge retries in simulator wrapper | #12 |
 
-PRs #2–#11 are **stacked**: each is based on the previous branch. Merge in order; after each merge retarget the
+PRs #2–#10 and #12 are **stacked** (GitHub skipped #11): each is based on the previous branch. Merge in order; after each merge retarget the
 next PR to `main`.
 
 ## 3. Current configuration
@@ -85,7 +85,7 @@ tick (kept on purpose, register R-11).
 - Keep the due-diligence dossier in this **public** repo, or remove it?
 - OK with the 2 h restore window (ADR-003)?
 - OK to delete unused stubs `src/vera/compose/stub.py`, `src/vera/reply/stub.py`?
-- Merge PRs #2–#11 in order.
+- Merge PRs #2–#10, then #12, in order.
 
 ## 7. Gotchas learned this session
 - Windows: run the simulator via `scripts/run_simulator.py` (UTF-8 re-exec); use `http://127.0.0.1:8080`, not

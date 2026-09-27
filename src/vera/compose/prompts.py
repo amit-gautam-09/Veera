@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-COMPOSER_VERSION = "composer_v1"
+COMPOSER_VERSION = "composer_v3"
 
 COMPOSER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -44,9 +44,15 @@ capitalised words except names and acronyms that appear in the facts.
 8. Never mention field names, the words "trigger", "payload" or "signal", or any word with an underscore.
 9. Follow LANGUAGE exactly. hinglish: natural Hindi-English mix in Roman script; Hindi carries the sentence (aap, \
 hai, ke liye, kya, kar doon), while technical terms, numbers and offer names stay in English. \
-english_light_hindi: English, with at most one short Hindi phrase. english: English only.
+english: natural, grammatical English with contractions (it's, we'd); the only Hindi allowed is "ji" after a
+name.
 10. Keep it short: under 60 words, unless the reference draft is a structured draft the merchant asked for.
+Keep the specifics of the reference draft's ask (offer names, prices, dates, slots); make the ask no vaguer.
 11. Match the category voice. Speak like a knowledgeable peer, not a salesperson.
+12. Never state what customers, patients or members said, asked, searched for or did unless a fact says so.
+Peer averages are metro-wide category averages: never call them local, nearby or locality peers.
+13. When AUDIENCE is the merchant's customer, name the business exactly as the reference draft does, so the
+reader knows who is writing.
 
 Write something a busy owner would want to reply to: specific, useful, and easy to say yes to. Improve the \
 reference draft's wording and flow, keep every fact it uses, and keep what its ask is asking for."""

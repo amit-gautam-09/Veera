@@ -26,8 +26,11 @@ reply ─► rule classifier (EN / Hinglish / Devanagari) ─► state machine �
   language follows the latest message.
 
 ## Model and why
-`claude-sonnet-5` with thinking disabled and structured JSON output: strong Hinglish and clinical-register prose
-at tick latency. It rejects `temperature`, so determinism comes from a content-hashed compose cache: identical
+Two providers behind one gateway. **Running now: `gemini-3.5-flash-lite` (free AI Studio key, `reasoning_effort=low`)**,
+the only free Flash model that answered reliably and fast (~2 s; 38/38 golden cases valid, 0 grounding findings,
+p90 2.3 s; ADR-012). Designed default: `claude-sonnet-5` with thinking disabled and structured JSON output, which
+writes strong Hinglish and clinical-register prose at tick latency. Neither setup relies on `temperature` (Sonnet 5 rejects it), so determinism comes from a content-hashed compose
+cache: identical
 inputs return byte-identical output. Without `ANTHROPIC_API_KEY` the same pipeline runs on the deterministic
 wording each handler writes, which is grounded and valid by construction. That wording is also the fallback on any
 timeout, 429 or validation failure.

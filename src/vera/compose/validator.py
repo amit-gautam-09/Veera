@@ -39,6 +39,42 @@ _SOURCE_CLAIM = re.compile(
 _RELATIVE_DAYS = re.compile(r"\bin (\d+) (?:days?|weeks?)\b|\b(\d+) days? (?:left|to go|until)\b", re.IGNORECASE)
 _REINTRO = re.compile(r"\b(this is vera|vera here|i am vera|i'm vera|vera from magicpin|vera se bol)\b", re.IGNORECASE)
 QUALIFYING = ("would you", "do you", "can you tell", "what if", "how about")
+GENERIC_BUSINESS_WORDS = {
+    "dr",
+    "s",
+    "the",
+    "and",
+    "of",
+    "by",
+    "dental",
+    "clinic",
+    "care",
+    "centre",
+    "center",
+    "studio",
+    "salon",
+    "salons",
+    "family",
+    "beauty",
+    "hair",
+    "spa",
+    "lounge",
+    "fitness",
+    "gym",
+    "yoga",
+    "pharmacy",
+    "medicos",
+    "medical",
+    "health",
+    "cafe",
+    "restaurant",
+    "kitchen",
+    "house",
+    "express",
+    "junction",
+    "plus",
+    "co",
+}
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -79,6 +115,7 @@ def validate(
     prior_body_hashes: list[str] | None = None,
     extra_numbers: set[str] | None = None,
     action_mode: bool = False,
+    business_name: str | None = None,
 ) -> Check:
     check = Check()
     body = f"{opener} {middle} {ask}".strip()
@@ -147,13 +184,20 @@ def validate(
     # V15 language
     if language == "hinglish" and hindi_word_count(body) < 2:
         check.add("V15", "expected hinglish")
-    if language == "english" and any(w in UNAMBIGUOUS_HINDI for w in re.findall(r"[a-z]+", lowered)):
+    if language in {"english", "english_light_hindi"} and any(
+        w in UNAMBIGUOUS_HINDI for w in re.findall(r"[a-z]+", lowered)
+    ):
         check.add("V15", "expected english")
     # V16 salutation
     if salutation_name and salutation_name.lower() not in opener.lower():
         check.add("V16", salutation_name)
     if "dr. dr." in lowered:
         check.add("V16", "double honorific")
+    # V18 customer-facing messages must say who is writing (a distinctive word of the business name)
+    if business_name:
+        tokens = [w for w in re.findall(r"[A-Za-z0-9]+", business_name) if w.lower() not in GENERIC_BUSINESS_WORDS]
+        if tokens and not any(w.lower() in lowered for w in tokens):
+            check.add("V18", business_name)
     # V17 action mode: no qualifying phrasing
     if action_mode and any(q in lowered for q in QUALIFYING):
         check.add("V17")

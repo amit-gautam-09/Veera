@@ -39,13 +39,11 @@ def _cache_store() -> Store:
 
 
 def _gateway() -> Any:
-    load_dotenv(ROOT / ".env", override=False)
-    key = os.getenv("ANTHROPIC_API_KEY")
-    if not key or os.getenv("VERA_LLM_ENABLED", "true").lower() in {"0", "false", "no"}:
-        return None
-    from vera.llm.gateway import AnthropicGateway
+    from vera.config import load_settings
+    from vera.llm.gateway import make_gateway
 
-    return AnthropicGateway(key, os.getenv("VERA_COMPOSER_MODEL", "claude-sonnet-5"), 4, os.getenv("VERA_LLM_EFFORT"))
+    load_dotenv(ROOT / ".env", override=False)
+    return make_gateway(load_settings())
 
 
 def compose(category: dict, merchant: dict, trigger: dict, customer: dict | None = None) -> dict:

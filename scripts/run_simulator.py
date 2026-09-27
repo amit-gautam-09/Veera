@@ -18,8 +18,11 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import ModuleType
+from typing import Any
+from urllib import error as urlerror
 from urllib import request as urlrequest
 
 from dotenv import load_dotenv
@@ -29,6 +32,9 @@ SIM_PATH = ROOT / "reference" / "challenge" / "judge_simulator.py"
 SCORING_SCENARIOS = {"phase2_short", "full_evaluation"}
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 LLM_TIMEOUT_S = 60
+JUDGE_RETRIES = 5
+JUDGE_RETRY_BASE_S = 8.0
+JUDGE_RETRY_MAX_S = 60.0
 
 
 def parse_args() -> argparse.Namespace:
@@ -78,6 +84,45 @@ def patch_anthropic(sim: ModuleType) -> None:
     sim.AnthropicProvider.complete = complete
 
 
+def patch_retries(sim: ModuleType) -> None:
+    """Free-tier judges return 429/503 under load; the vendor code then silently scores by counting digits.
+    Retry each judge call with exponential backoff so every message gets a real LLM score."""
+    for provider in (
+        sim.AnthropicProvider,
+        sim.GeminiProvider,
+        sim.OpenAIProvider,
+        sim.GroqProvider,
+        sim.OpenRouterProvider,
+        sim.DeepSeekProvider,
+    ):
+        original = provider.complete
+
+        def complete(self: object, prompt: str, system: str | None = None, _orig: Any = original) -> str:
+            delay = JUDGE_RETRY_BASE_S
+            for attempt in range(JUDGE_RETRIES + 1):
+                try:
+                    return str(_orig(self, prompt, system))
+                except urlerror.HTTPError as exc:
+                    if exc.code not in (429, 500, 503) or attempt == JUDGE_RETRIES:
+                        raise
+                    print(f"[wrapper] judge HTTP {exc.code}; retry {attempt + 1} in {delay:.0f}s", file=sys.stderr)
+                    time.sleep(delay)
+                    delay = min(delay * 2, JUDGE_RETRY_MAX_S)
+            raise RuntimeError("unreachable")
+
+        provider.complete = complete
+
+
+def patch_verbose(sim: ModuleType) -> None:
+    """full_evaluation hides the judge's reasons; show them (they are the useful part)."""
+    original = sim.JudgeSimulator._score_and_display
+
+    def show(self: object, action: dict[str, Any], verbose: bool = True) -> None:
+        original(self, action, verbose=True)
+
+    sim.JudgeSimulator._score_and_display = show
+
+
 def make_null_provider(sim: ModuleType) -> object:
     class NullProvider(sim.LLMProvider):
         def complete(self, prompt: str, system: str | None = None) -> str:
@@ -109,6 +154,8 @@ def main() -> int:
     sim.LLM_API_KEY = os.getenv("JUDGE_LLM_API_KEY", "")
     sim.LLM_MODEL = os.getenv("JUDGE_LLM_MODEL", "claude-sonnet-5")
     patch_anthropic(sim)
+    patch_retries(sim)
+    patch_verbose(sim)
 
     if sim.LLM_API_KEY:
         llm = sim.create_provider()

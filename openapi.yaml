@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: Vera bot (magicpin AI Challenge)
+  version: 0.1.0
+  description: Contract implemented by the Vera bot. Prose and rules live in docs/05-api-contract.md.
+paths:
+  /v1/context:
+    post:
+      summary: Receive a versioned context push
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContextPush' }
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContextAccepted' }
+        '400':
+          description: Malformed, invalid scope, or payload too large
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContextRejected' }
+        '409':
+          description: Stored version is the same or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContextStale' }
+  /v1/tick:
+    post:
+      summary: Periodic wake-up; bot may initiate conversations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TickRequest' }
+      responses:
+        '200':
+          description: Zero to twenty proactive actions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TickResponse' }
+  /v1/reply:
+    post:
+      summary: Receive a merchant or customer reply; return the next move
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReplyRequest' }
+      responses:
+        '200':
+          description: send, wait or end
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReplySend'
+                  - $ref: '#/components/schemas/ReplyWait'
+                  - $ref: '#/components/schemas/ReplyEnd'
+  /v1/healthz:
+    get:
+      summary: Liveness and loaded-context counts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Healthz' }
+  /v1/metadata:
+    get:
+      summary: Bot identity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Metadata' }
+  /v1/teardown:
+    post:
+      summary: Wipe all state
+      responses:
+        '200':
+          description: Wiped
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wiped]
+                properties: { wiped: { type: boolean } }
+components:
+  schemas:
+    Scope:
+      type: string
+      enum: [category, merchant, customer, trigger]
+    Cta:
+      type: string
+      enum: [open_ended, binary_yes_no, binary_confirm_cancel, multi_choice_slot, none]
+    ContextPush:
+      type: object
+      required: [scope, context_id, version, payload]
+      properties:
+        scope: { $ref: '#/components/schemas/Scope' }
+        context_id: { type: string, minLength: 1 }
+        version: { type: integer, minimum: 0 }
+        payload: { type: object, additionalProperties: true }
+        delivered_at: { type: string, format: date-time }
+    ContextAccepted:
+      type: object
+      required: [accepted, ack_id, stored_at]
+      properties:
+        accepted: { const: true }
+        ack_id: { type: string, example: ack_merchant_m_001_drmeera_dentist_delhi_v2 }
+        stored_at: { type: string, format: date-time }
+    ContextStale:
+      type: object
+      required: [accepted, reason, current_version]
+      properties:
+        accepted: { const: false }
+        reason: { const: stale_version }
+        current_version: { type: integer }
+    ContextRejected:
+      type: object
+      required: [accepted, reason]
+      properties:
+        accepted: { const: false }
+        reason: { type: string, enum: [invalid_scope, invalid_body, payload_too_large, internal_error] }
+        details: { type: string }
+    TickRequest:
+      type: object
+      required: [now]
+      properties:
+        now: { type: string, format: date-time }
+        available_triggers:
+          type: array
+          items: { type: string }
+          default: []
+    TickAction:
+      type: object
+      required: [conversation_id, merchant_id, customer_id, send_as, trigger_id, template_name,
+                 template_params, body, cta, suppression_key, rationale]
+      properties:
+        conversation_id: { type: string, example: conv_m001_drmeera_research_digest_20260426_3f9a1c }
+        merchant_id: { type: string }
+        customer_id: { type: [string, 'null'] }
+        send_as: { type: string, enum: [vera, merchant_on_behalf] }
+        trigger_id: { type: string }
+        template_name: { type: string, example: vera_knowledge_v1 }
+        template_params:
+          type: array
+          items: { type: string }
+          minItems: 3
+          maxItems: 3
+        body: { type: string, minLength: 1 }
+        cta: { $ref: '#/components/schemas/Cta' }
+        suppression_key: { type: string, minLength: 1 }
+        rationale: { type: string, minLength: 1 }
+    TickResponse:
+      type: object
+      required: [actions]
+      properties:
+        actions:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/TickAction' }
+    ReplyRequest:
+      type: object
+      required: [conversation_id, message]
+      properties:
+        conversation_id: { type: string }
+        merchant_id: { type: [string, 'null'] }
+        customer_id: { type: [string, 'null'] }
+        from_role: { type: string, enum: [merchant, customer], default: merchant }
+        message: { type: string }
+        received_at: { type: string, format: date-time }
+        turn_number: { type: integer, minimum: 1 }
+    ReplySend:
+      type: object
+      required: [action, body, cta, rationale]
+      properties:
+        action: { const: send }
+        body: { type: string, minLength: 1 }
+        cta: { $ref: '#/components/schemas/Cta' }
+        rationale: { type: string }
+    ReplyWait:
+      type: object
+      required: [action, wait_seconds, rationale]
+      properties:
+        action: { const: wait }
+        wait_seconds: { type: integer, minimum: 60 }
+        rationale: { type: string }
+    ReplyEnd:
+      type: object
+      required: [action, rationale]
+      properties:
+        action: { const: end }
+        rationale: { type: string }
+    Healthz:
+      type: object
+      required: [status, uptime_seconds, contexts_loaded]
+      properties:
+        status: { const: ok }
+        uptime_seconds: { type: integer }
+        contexts_loaded:
+          type: object
+          required: [category, merchant, customer, trigger]
+          properties:
+            category: { type: integer }
+            merchant: { type: integer }
+            customer: { type: integer }
+            trigger: { type: integer }
+    Metadata:
+      type: object
+      required: [team_name, team_members, model, approach, contact_email, version, submitted_at]
+      properties:
+        team_name: { type: string }
+        team_members: { type: array, items: { type: string } }
+        model: { type: string }
+        approach: { type: string }
+        contact_email: { type: string }
+        version: { type: string }
+        submitted_at: { type: string, format: date-time }

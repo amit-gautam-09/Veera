@@ -82,8 +82,7 @@ the version (`composer_v1` → `composer_v2`), which changes every input hash an
    "lead with the finding and its source, connect it to one fact about this merchant, offer to turn it into
    something usable"; performance → "state the number and the window, give the likely driver only if a fact
    names it, one concrete fix"; customer → "name, why now, the real slot/price, no pressure".
-6. **Output contract**: the JSON schema below; `rationale` ≤ 40 words naming the trigger, the primary fact and
-   the lever.
+6. **Output contract**: the JSON schema below (three prose fields).
 
 User content = the rendered fact sheet (§2.3) + prior bodies sent to this merchant ("do not reuse their
 phrasing") + for repairs, the violation list.
@@ -112,16 +111,16 @@ Effort (`output_config.effort`) is measured in M4 (`low` vs default) and fixed i
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["opener", "middle", "ask", "rationale"],
+  "required": ["opener", "middle", "ask"],
   "properties": {
     "opener":    { "type": "string", "description": "Salutation only, e.g. 'Dr. Meera,' or 'Hi Priya 👋'" },
     "middle":    { "type": "string", "description": "1-3 sentences: why now + the primary fact + support. No question." },
-    "ask":       { "type": "string", "description": "Exactly one sentence, the only call to action." },
-    "rationale": { "type": "string", "description": "<= 40 words: trigger, primary fact, lever." }
+    "ask":       { "type": "string", "description": "Exactly one sentence, the only call to action." }
   }
 }
 ```
-Code then sets: `body = opener + " " + middle + " " + ask` (whitespace-normalised), `template_params =
+The rationale is built in code from the decision (trigger, primary signal, levers, CTA, language), so it always
+matches the body and costs no output tokens. Code then sets: `body = opener + " " + middle + " " + ask` (whitespace-normalised), `template_params =
 [opener, middle, ask]`, `template_name` and `cta` from the decision, `send_as`, `suppression_key`. The template
 for every `template_name` is `{{1}} {{2}} {{3}}`, so params always render to the body.
 
@@ -132,7 +131,7 @@ thousands separators (`2,410` / `2,100` / Indian `1,20,000`), `lakh` → ×10000
 
 | # | Rule | Check | Allowed-list sources |
 |---|---|---|---|
-| V1 | Structure | opener, middle, ask non-empty; body ≤ 700 chars; `?` appears only in `ask` | — |
+| V1 | Structure | opener, middle, ask all non-empty (WhatsApp template params cannot be empty); body ≤ 900 chars; `?` appears only in `ask` | — |
 | V2 | Single CTA | `ask` is one sentence; `middle` contains no imperative CTA markers ("reply", "click", "call us", "tap") | — |
 | V3 | No URLs | regex for `http`, `www.`, bare domains (`\w+\.(com|in|ai|io|org)\b`) | — |
 | V4 | Taboos | case-insensitive phrase match on `voice.vocab_taboo` + `voice.taboos`, parentheticals stripped (`"best price (without supporting data)"` → `"best price"`) | — |
@@ -152,12 +151,12 @@ thousands separators (`2,410` / `2,100` / Indian `1,20,000`), `lakh` → ×10000
 Violations are reported as codes (`V6:31`, `V11:Lancet`) in logs and in the repair prompt.
 
 ## 6. Fallback templates
-- One template set per **family × send_as × language** (7 families + customer approval + generic; English and
-  Hinglish), filled by named slots: `{salutation}`, `{why_now}`, `{primary}`, `{support}`, `{offer}`,
-  `{source}`, `{ask}`. Slot values come only from the fact sheet; a template whose required slot has no fact
-  is skipped in favour of the family's minimal variant (why-now + one merchant fact + ask).
-- CTA sentences per family are fixed strings (e.g. performance: "Want me to draft the fix for you to
-  approve?"), chosen so every fallback also passes V1–V16.
+- Each kind handler (`merchant_kinds.py`, `customer_kinds.py`) writes the fallback as `lines` + `ask` in
+  English and Hinglish (`ctx.t(en, hi)` for merchants, `ctx.tc(en, hi)` for customers), interpolating only
+  values it read from the contexts or registered with `ctx.derive()`.
+- The same wording is handed to the LLM as the reference draft, so LLM output starts from grounded text.
+- `composer.fallback_message` validates the fallback; offending sentences are dropped, and a message with no
+  middle left is skipped (restraint beats a weak or ungrounded send).
 - Wording is original and reviewed against the similarity checker in CI.
 - Fallbacks are deliberately plainer than LLM output; they exist so a timeout never costs a message.
 

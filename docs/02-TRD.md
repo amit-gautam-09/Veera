@@ -127,15 +127,16 @@ src/vera/
   planner/tick.py      candidate resolution, guards, ranking, per-merchant cap, deadline
   compose/facts.py     FactSheetBuilder + derived facts + allowed-token index
   compose/numbers.py   number/₹/%/date normalisation shared by facts and validator
-  compose/playbook.py  kind → family, template, CTA, levers, thin-payload + mismatch rules (07)
+  compose/playbook.py  Plan type, kind → family/template registry, decide()
+  compose/merchant_kinds.py  one handler per merchant-facing kind (07 §5–§10) + generic handler
+  compose/customer_kinds.py  customer kinds, consent gate, merchant-approval re-route (07 §11, ADR-008)
   compose/composer.py  prompt assembly, LLM call, assembly of body/template_params
   compose/prompts/     versioned prompt text (composer_v1, reply_v1)
   compose/validator.py grounding + style checks, sentence drop
-  compose/fallback.py  deterministic family templates
   compose/cache.py     input hashing, compose cache, precompute task registry
   reply/classifier.py  rule-based intent detection (English, Hinglish, Devanagari)
-  reply/policy.py      state machine (09-conversation-policy)
-  reply/composer.py    reply prompt + fallback replies
+  reply/engine.py      state machine (09), lazy conversations, replay idempotency, optional LLM phrasing
+  reply/responses.py   deterministic replies and action-mode deliverables built from context
   llm/gateway.py       LLMGateway protocol + AnthropicGateway (timeouts, no retries, JSON)
   domain/language.py   language directive, Hinglish detection
   domain/salutation.py owner name normalisation per category
@@ -188,7 +189,10 @@ bot.py, conversation_handlers.py   offline deliverables that call the same pipel
 6. **Commit**: create conversations, add suppression keys and body hashes, write through, return actions.
 
 ### 4.5 FactSheetBuilder (`compose/facts.py`)
-Deterministic, no LLM. Produces a `FactSheet`: ordered `Fact` records (`id`, `label`, `value`, `render`,
+Deterministic, no LLM. Every context passes through one sanitiser when the per-trigger `Ctx` is built
+(`facts.sanitize` with per-scope shapes): a nested field of the wrong type (a string where an object belongs, a
+null list) reads as empty, so malformed injected contexts degrade to missing facts instead of exceptions.
+Produces a `FactSheet`: ordered `Fact` records (`id`, `label`, `value`, `render`,
 `source_path`, `visible_to_judge`, `relevance`), the voice block, language directive, salutation, offers
 (merchant active first; catalog items flagged `suggestion_only`), and the **allowed-token index** used by the
 validator (every numeric rendering of every fact, every known proper noun, every source string).
@@ -210,7 +214,7 @@ a merchant-facing approval message (`vera_customer_approval_v1`) built from payl
   category, family-specific instructions) + user content (fact sheet rendered as labelled lines, decision,
   language directive, prior bodies to this merchant for anti-repetition).
 - Output via structured outputs (`output_config.format` with a JSON schema):
-  `{opener, middle, ask, rationale}`. Code assembles `body = f"{opener} {middle} {ask}"`,
+  `{opener, middle, ask}` (rationale is built in code from the decision). Code assembles `body = f"{opener} {middle} {ask}"`,
   `template_params = [opener, middle, ask]`, and sets `template_name` and `cta` from the decision.
 - Request settings: `model=VERA_COMPOSER_MODEL`, `thinking={"type": "disabled"}` (Sonnet 5 otherwise runs
   adaptive thinking and adds latency), no sampling parameters (rejected with 400 on Sonnet 5), `max_tokens`
@@ -229,10 +233,11 @@ Failure handling ladder: (1) drop the offending sentence from `middle` if what r
 signal; (2) one repair call listing the violations, only if ≥ 3 s remain; (3) fallback template. Whenever the body
 changes after the LLM call, the rationale is rebuilt in code from the decision record so the two always agree.
 
-### 4.9 FallbackComposer (`compose/fallback.py`)
-Deterministic templates per family × send_as, filled from the decision's primary and supporting facts, the
-salutation and the CTA sentence for the family. Hinglish and English variants. Always valid by construction
-(they only interpolate facts from the sheet). Also used when `ANTHROPIC_API_KEY` is unset or
+### 4.9 Fallback wording (`compose/merchant_kinds.py`, `compose/customer_kinds.py`)
+Each kind handler writes its own grounded English and Hinglish sentences from the facts it selected, next to
+the decision it makes, so the fallback message and the decision cannot drift apart. `composer.fallback_message`
+assembles and validates them; a failing sentence is dropped, and if nothing defensible remains the trigger is
+skipped rather than sent. Also used when `ANTHROPIC_API_KEY` is unset or
 `VERA_LLM_ENABLED=false`. Original wording, no case-study text.
 
 ### 4.10 Compose cache and precompute (`compose/cache.py`)
@@ -248,13 +253,13 @@ salutation and the CTA sentence for the family. Hinglish and English variants. A
 
 ### 4.11 ReplyEngine (`reply/`)
 - `classifier.py`: ordered rules (09 §2) over the normalised inbound; returns `(intent, confidence, evidence)`.
-- `policy.py`: state machine (09 §3) → `send | wait | end` plus what a `send` must contain (acknowledgement,
-  deliverable, redirect, apology).
-- `composer.py`: one LLM call (`reply_v1`) that receives conversation state, the promised deliverable, the fact
-  sheet of the original trigger, the inbound message, the policy directive and, if the rules were
-  inconclusive, asks the model to classify and act in the same call. Output `{intent, action, body, cta,
-  wait_seconds, rationale}`, validated like tick output (numbers from the merchant's own message are added to
-  the allowed index). Fallback replies are deterministic per intent.
+- `engine.py`: state machine (09 §3) → `send | wait | end`; the deterministic reply for the chosen row comes
+  from `responses.py` (deliverables per trigger kind, built only from context).
+- Optional LLM phrasing (`reply_v1`): for rows whose exact wording doesn't matter (not auto-reply, opt-out,
+  hostile, slot confirmation, defer), the model rewrites the deterministic reply as the next natural turn,
+  keeping its action and ask. Output `{body}`, validated like tick output (numbers from the inbound message are
+  allowed); any failure keeps the deterministic reply. Classification stays rule-based (the `unclear` row
+  restates the open question).
 - Deadline 5 s (`VERA_REPLY_DEADLINE_S`).
 
 ### 4.12 LLMGateway (`llm/gateway.py`)

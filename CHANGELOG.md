@@ -3,7 +3,46 @@
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+### Fixed (M10 polish)
+- "I'll" was lowercased after a greeting; growing metrics framed an unverified profile as the cause of the growth
+  (now "next step"); regulation messages repeated title and date; the IPL message hardcoded the sample digest's
+  12%/18% (now quotes whichever IPL item is in context) and is shorter; thin review ask no longer repeats itself.
 ### Added
+- M9 packaging: `Dockerfile`, `.dockerignore`, `fly.toml`, `bot.py`, `conversation_handlers.py`,
+  `scripts/generate_submission.py` + `submission.jsonl` (30 lines), `scripts/smoke_public_url.sh`, 1-page README.
+### Changed
+- SQLite write-through is best-effort: a failed write is logged (`store.write_failed`) and memory stays the
+  source of truth. The case-study path for V14 is configurable (`VERA_CASE_STUDIES_PATH`).
+- M8 hardening: chaos tests (malformed contexts for every kind, weird replies, version edge cases,
+  concurrent pushes), restart-recovery test (`-m slow`), `scripts/soak.py`; pytest markers `llm`, `slow`,
+  `soak` excluded by default.
+### Fixed
+- Wrong-typed nested context fields (e.g. `delta_7d` as a string, `consent` as a string) raised inside the
+  composer; every context is now sanitised once when the per-trigger context is built.
+- M7 evaluation: independent grounding auditor (`eval/grounding.py`) with a fabrication negative control,
+  extended harness (`python -m eval.harness`) with offline checks and optional LLM judge + personas, adaptation
+  tests for new digest items, perf updates and injected customers.
+- M6 reply engine: rule classifier (English/Hinglish/Devanagari), state machine per `docs/09` (auto-reply
+  ladder counted per merchant across conversation ids, opt-out/hostile exits with suppression, action-mode
+  deliverables per trigger kind, off-topic decline + redirect, defer waits, soft-no, slot confirmation, reply
+  after end), replay idempotency, per-turn language mirroring, optional `reply_v1` LLM phrasing with
+  validation; replay suite R1–R14.
+- M5 planner invariants P1–P8 as hypothesis property tests.
+### Fixed
+- Empty `middle` produced a `template_params` entry that was empty (invalid for WhatsApp templates) and a
+  double space; V1 now requires all three parts and the thin review handler has a lead sentence.
+- M4 LLM composer: `AnthropicGateway` (Sonnet 5, thinking disabled, structured output, no retries,
+  concurrency cap), `composer_v1` prompt, content-hashed persistent cache, single-flight precompute on trigger
+  push and on dependent version bumps, drop-sentence and one-call repair before the deterministic fallback;
+  fake-gateway tests and tick latency tests.
+- M3 deterministic composer: fact sheet with allowed-token index, per-kind playbook for all 26 kinds
+  + generic handler (thin-payload, mismatch, consent and approval rules), validator V1–V17, English and Hinglish
+  grounded wording; golden set of 38 snapshot-reviewed cases and unit tests for numbers, validator, salutation,
+  language and consent.
+- M2 contract skeleton: all six endpoints per `docs/05-api-contract.md` (400/409/500 KB, no 422/5xx),
+  versioned context store with SQLite write-through and a restore window, tick planner (guards, ranking,
+  per-merchant cap, deadline), stub composer and reply handler, `scripts/run_simulator.py` wrapper,
+  contract and persistence tests.
 - Repository bootstrap: reference package extracted to `reference/challenge/`, expanded dataset generated
   (5 categories, 50 merchants, 200 customers, 100 triggers, 30 test pairs), tooling (`pyproject.toml`, ruff,
   mypy, pytest, pre-commit), `.env.example`, `CLAUDE.md`.

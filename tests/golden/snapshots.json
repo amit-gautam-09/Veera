@@ -1,0 +1,230 @@
+{
+  "T01": {
+    "trigger_id": "trg_013_corporate_thali_planning",
+    "cta": "binary_confirm_cancel",
+    "send_as": "vera",
+    "body": "Hi Suresh, here's the draft, with the blanks for you to fill. Corporate bulk thali package, first draft: base it on your Weekday Lunch Thali @ ₹149; bulk rate for 10+ plates ₹___ (your call); orders by the previous evening; one lunch delivery window. For reference: your weekday thali is doing well — 18 orders/day avg. Reply CONFIRM with the blanks filled and I'll turn it into a Google post and a WhatsApp message."
+  },
+  "T02": {
+    "trigger_id": "trg_016_kids_yoga_program_drafting",
+    "cta": "binary_confirm_cancel",
+    "send_as": "vera",
+    "body": "Hi Padma, here's the draft, with the blanks for you to fill. Kids yoga summer camp, first draft: 4-week program, 3 classes/week, age 7-12, ₹2,499; batch timings ___; intro offer First Month @ ₹499. Reply CONFIRM with the blanks filled and I'll turn it into a Google post and a WhatsApp message."
+  },
+  "T03": {
+    "trigger_id": "trg_076_appointment_tomorrow_m_019_karim_salon_lu",
+    "cta": "binary_confirm_cancel",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Aditya, a quick reminder of your appointment tomorrow at Karim's Salon, Alambagh. Reply CONFIRM, or tell us if you need a different time."
+  },
+  "T04": {
+    "trigger_id": "trg_077_appointment_tomorrow_m_020_renu_salon_luc",
+    "cta": "binary_confirm_cancel",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Riya, kal Beauty Lounge by Renu, Gomti Nagar par aapki appointment ka reminder. CONFIRM reply karein, ya batayein agar time badalna ho."
+  },
+  "T05": {
+    "trigger_id": "trg_020_summer_demand_shift",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Ramesh ji, seasonal demand shift shuru ho gaya hai: ORS +40%, sunscreen +38%, anti-fungal +45%, cold-cough -60%. Is hafte ka sabse aasaan kaam: Move ORS + sunscreen to counter visibility; cold/cough to back shelf. Kya main iske baare mein customers ke liye ek short note draft kar doon, aapke Free Home Delivery > ₹499 offer ke saath?"
+  },
+  "T06": {
+    "trigger_id": "trg_022_cde_webinar_dentists",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Dr. Meera, IDA Delhi: Digital impressions — 2026 state of the art (IDA Delhi chapter calendar) 2 May, 7pm ko hai, aur isse milenge 2 CDE credits. Speaker: Dr. R. Mehta. Free for IDA members; ₹500 for non-members. Kya main ek din pehle reminder bhej doon?"
+  },
+  "T07": {
+    "trigger_id": "trg_019_chronic_refill_grandfather",
+    "cta": "binary_confirm_cancel",
+    "send_as": "merchant_on_behalf",
+    "body": "Namaste, Apollo Health Plus Pharmacy, Malviya Nagar se: Sharma ji ki metformin, atorvastatin, telmisartan 28 Apr ko khatam hongi. Wahi medicines ready hain. Senior Citizen 15% OFF lagu hoga. Free Home Delivery > ₹499 bhi milega. CONFIRM reply karein, hum saved address par deliver kar denge."
+  },
+  "T08": {
+    "trigger_id": "trg_081_chronic_refill_due_m_011_dr_sameer_dent",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Vivaan, Bright Smile Dental, Indiranagar here: it's a good time for your routine dental check-up since your last visit on 1 Apr 2026. Thanks for the 5 visits so far. Shall we hold a slot for you this week?"
+  },
+  "T09": {
+    "trigger_id": "trg_023_competitor_opened_dentist",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Dr. Meera, Smile Studio 1.3 km door khula hai (8 Apr), aur woh Dental Cleaning @ ₹199 de rahe hain. Price match karna zaroori nahi: is mahine 5 reviews kehte hain \"Dr. Meera explains everything patiently\", yeh copy karna mushkil hai. Kya main aapka Google description us strength ke saath update kar doon?"
+  },
+  "T10": {
+    "trigger_id": "trg_056_competitor_opened_m_006_southindiancaf",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Suresh, a new listing in your category has come up near Indiranagar. Your edge is thali quality: 22 positive mentions this month. Want me to update your Google description to lead with that strength?"
+  },
+  "T11": {
+    "trigger_id": "trg_008_curious_ask_studio11",
+    "cta": "open_ended",
+    "send_as": "vera",
+    "body": "Hi Lakshmi, I'll turn your answer into this week's Google post and a ready reply for price questions. Which is getting asked about more this week: Haircut @ ₹99 or Hair Spa @ ₹499?"
+  },
+  "T12": {
+    "trigger_id": "trg_096_curious_ask_due_m_006_southindiancaf",
+    "cta": "open_ended",
+    "send_as": "vera",
+    "body": "Hi Suresh, I'll turn your answer into this week's Google post and a ready reply for price questions. Is Weekday Lunch Thali @ ₹149 still what people ask about most, or is something else picking up this week?"
+  },
+  "T13": {
+    "trigger_id": "trg_015_winback_rashmi",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Rashmi, PowerHouse Fitness, HSR Layout here: it's been 57 days since your last session with us, and that's completely fine. Since you were working on weight loss, our 3 FREE Trial Classes could be an easy way back in. Want us to keep a spot for you this week, no commitment?"
+  },
+  "T14": {
+    "trigger_id": "trg_071_customer_lapsed_soft_m_014_dr_asha_dentis",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Reyansh, Asha Dental Care, Sector 17 here: we haven't seen you since 1 Apr 2026, and that's completely fine. Want us to keep a spot for you this week, no commitment?"
+  },
+  "T15": {
+    "trigger_id": "trg_072_customer_lapsed_soft_m_049_komal_pharmaci",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Reyansh, Daily Care Medicos, Alambagh se ek kaam ki baat: \"Where to NOT store your medicines\". Kya hum aapko iska short version bhej dein?"
+  },
+  "T16": {
+    "trigger_id": "trg_025_dormancy_glamour",
+    "cta": "open_ended",
+    "send_as": "vera",
+    "body": "Hi Anjali, ek chhoti baat: aapke 180 clients 90+ din se wapas nahi aaye. Aapke yahan unhe wapas kya laata hai: koi seasonal offer ya ek simple reminder?"
+  },
+  "T17": {
+    "trigger_id": "trg_046_dormant_with_vera_m_029_anand_restaura",
+    "cta": "open_ended",
+    "send_as": "vera",
+    "body": "Anand ji, is hafte aapke calls 21% kam hue hain. Kya aapki taraf kuch badla hai, jaise timings, menu ya staff?"
+  },
+  "T18": {
+    "trigger_id": "trg_006_festival_diwali",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Lakshmi, Diwali is on 31 Oct, inside your Oct-Dec peak (primary wedding/festival season — bridal package bookings 4x baseline). Want me to draft a festive post around your Hair Spa @ ₹499 offer so it's live early?"
+  },
+  "T19": {
+    "trigger_id": "trg_061_festival_upcoming_m_037_pooja_gym_bang",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Pooja, your busiest stretch is coming: Aug-Oct, wedding-prep + festival window — repeat clients return to shape up. Want me to set up Couple/Family Plan @ ₹999/month as a festive offer and draft the post?"
+  },
+  "T20": {
+    "trigger_id": "trg_021_unverified_gbp_sunrise",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Vikas ji, aapka Google profile abhi verified nahi hai; magicpin ke estimate se verify hone par lagbhag 30% zyada visibility milti hai. Yeh aapke abhi ke 720 views aur 14 calls ke upar hoga. Kya main postcard ya phone call se verification shuru kar doon?"
+  },
+  "T21": {
+    "trigger_id": "trg_010_ipl_match_delhi",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Suresh ji, aaj raat 7:30pm par Arun Jaitley Stadium mein DC vs MI hai. magicpin order data, Apr 2026: Saturday IPL matches shift orders to home-watch parties; restaurant covers down 12% vs Saturday average. Weeknight matches drive +18% covers. Toh aaj raat dine-in match promo se zyada fayda nahi hoga. Aapka Buy 1 Pizza Get 1 Free (Tue-Thu) Sunday ko valid nahi hai, use weeknights ke liye rakhiye. Kya main aaj raat ke liye ek delivery-night post draft kar doon?"
+  },
+  "T22": {
+    "trigger_id": "trg_012_milestone_mylari",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Suresh, you're at 145 reviews, just 5 away from 150. Customers keep praising your thali quality (22 mentions this month). Want me to draft a short review request you can send your regular customers?"
+  },
+  "T23": {
+    "trigger_id": "trg_041_milestone_reached_m_032_mukesh_restaur",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Mukesh ji, ek number jo dikhana chahiye: 5.3% CTR, jabki metro restaurants average 2.5% hai, about 2.1x. Kya main aapke regular customers ke liye ek short review request draft kar doon?"
+  },
+  "T24": {
+    "trigger_id": "trg_004_perf_dip_bharat",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Dr. Bharat, is hafte aapke calls 50% kam hue hain (baseline 12). Ek wajah ho sakti hai: aapka Google profile abhi verified nahi hai. Kya main aaj hi verification shuru kar doon?"
+  },
+  "T25": {
+    "trigger_id": "trg_031_perf_dip_m_023_sushma_salon_p",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Sushma, ek number peeche hai: 30 din mein 22 calls, jabki metro salons average 28 hai. Abhi aapke profile par koi active offer nahi hai. Kya main Haircut @ ₹99 ko starter offer ki tarah laga doon?"
+  },
+  "T26": {
+    "trigger_id": "trg_024_perf_spike_zen",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Padma, your calls are up 15% this week against a baseline of 18, and the lift lines up with your kids yoga post. Your First Month @ ₹499 offer is the natural next step for those enquiries. Want me to draft a 3-line reply you can send everyone who enquires this week?"
+  },
+  "T27": {
+    "trigger_id": "trg_036_perf_spike_m_010_sunrisepharm_p",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Vikas ji, aapke calls dheere dheere badh rahe hain: is hafte +5%. Agla step: aapka Google profile abhi verified nahi hai. Kya main aaj hi verification shuru kar doon?"
+  },
+  "T28": {
+    "trigger_id": "trg_003_recall_due_priya",
+    "cta": "multi_choice_slot",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Priya, Dr. Meera's Dental Clinic, Lajpat Nagar se: aapki 6-month cleaning 12 Nov ko due hai. Aapke liye slots khaali hain: Wed 5 Nov, 6pm ya Thu 6 Nov, 5pm. Charges: Dental Cleaning @ ₹299. 1 ya 2 reply karein, ya apna time bata dijiye."
+  },
+  "T29": {
+    "trigger_id": "trg_066_recall_due_m_008_zenyoga_gym_ch",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Diya, Zen Yoga Studio, Mylapore here: we'd love to see you back for a session since your last visit on 1 Apr 2026. Thanks for the 9 visits so far. Our current offer: First Month @ ₹499. Shall we hold a slot for you this week?"
+  },
+  "T30": {
+    "trigger_id": "trg_002_compliance_dci_radiograph",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Dr. Meera, Dental Council of India circular 4 Nov 2026: DCI revised radiograph dose limits, 15 Dec 2026 se laagu. Maximum dose per IOPA exposure drops from 1.5 mSv to 1.0 mSv. E-speed film passes at the new limit; D-speed does not. Kya main 15 Dec 2026 se pehle setup check karne ke liye 1-page checklist bana doon?"
+  },
+  "G01": {
+    "trigger_id": "trg_001_research_digest_dentists",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Dr. Meera, JIDA Oct 2026, p.14 mein ek kaam ki cheez aayi hai: 3-month fluoride varnish recall outperforms 6-month for high-risk adult caries. Yeh aapke 124 high-risk adult patients par seedha laagu hota hai. Kya main isse aapke patients ke liye ek short WhatsApp note bana doon?"
+  },
+  "G02": {
+    "trigger_id": "trg_005_renewal_due_bharat",
+    "cta": "binary_confirm_cancel",
+    "send_as": "vera",
+    "body": "Dr. Bharat, aapka Pro plan 12 din mein renew hona hai (₹4,999). Isi se aapke profile ka upkeep chalta hai, jisne pichhle 30 din mein 980 views laaye. CONFIRM reply karein aur main renewal request raise kar doongi."
+  },
+  "G03": {
+    "trigger_id": "trg_011_review_theme_late_delivery",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Suresh ji, pichhle 30 din mein 4 reviews ne delivery late ki baat ki hai; ek ne likha \"took 50 mins for a 15 min ride\". Achhi baat: 8 reviews aapki pizza quality ki tareef karte hain, toh asli product mein dikkat nahi hai. Kya main un 4 reviews ke liye short, polite replies draft kar doon?"
+  },
+  "G04": {
+    "trigger_id": "trg_014_seasonal_acquisition_dip_powerhouse",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Karthik, your profile views are down 30% this week. That matches the usual Apr-Jun pattern: lowest acquisition window — focus on retention, not acquisition. With 245 active members and monthly churn at 10% vs the 8% metro average, retention is where effort pays right now. Want me to draft a member check-in message to keep attendance up through the dip?"
+  },
+  "G05": {
+    "trigger_id": "trg_018_supply_atorvastatin_recall",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Ramesh ji, urgent: atorvastatin ke batches AT2024-1102 aur AT2024-1108 by MfrZ par voluntary recall aaya hai (CDSCO alert Apr 2026). Customers should be informed; replacement available via distributor return chain. Aapke 240 chronic-Rx customers ko in batches ke against check karna chahiye. Kya main customer WhatsApp aur replacement steps draft kar doon?"
+  },
+  "G06": {
+    "trigger_id": "trg_017_kids_yoga_trial_followup_karthik",
+    "cta": "multi_choice_slot",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Sumitra, Zen Yoga Studio, Mylapore here: thanks for coming to Karthik's kids yoga trial on 22 Apr. The next session is Sat 3 May, 8am. Reply 1 to book it, or tell us a time that suits you."
+  },
+  "G07": {
+    "trigger_id": "trg_007_bridal_followup_kavya",
+    "cta": "binary_yes_no",
+    "send_as": "merchant_on_behalf",
+    "body": "Hi Kavya, Studio11 Family Salon, Kapra here: since your bridal trial on 22 Mar, the next step before your wedding on 8 Nov 2026 is the 30-day skin-prep program, and its window is open now. Shall we hold a Saturday consultation to plan it?"
+  },
+  "G08": {
+    "trigger_id": "trg_009_winback_glamour",
+    "cta": "binary_yes_no",
+    "send_as": "vera",
+    "body": "Hi Anjali, plan ruke 38 din ho gaye, aur 24 clients wapas nahi aaye; numbers 30% neeche hain. Kya main ek quick win se shuru karoon: un clients ke liye ek comeback message?"
+  }
+}

@@ -7,8 +7,12 @@ An HTTP bot that plays **Vera**, magicpin's WhatsApp assistant for merchant grow
 engagement compulsion. Docs are the spec; code implements them. When code diverges, update the doc in the same commit.
 
 ## Status
-- M0 bootstrap and M1 docs: done on `docs/m1-foundation` (PR to `main`). Waiting on the review checkpoint.
-- Next: M2 contract skeleton on `feat/m2-skeleton`. Milestone checklist: `docs/04-implementation-plan.md`.
+- M0–M9 built. Remaining: deploy (Fly.io assumed) and real-LLM measurement, both waiting on Amit's API key,
+  host login and contact email. Stub modules `compose/stub.py`, `reply/stub.py` are unused (kept until Amit OKs
+  deleting them).
+- Golden snapshots: `tests/golden/snapshots.json`; regenerate after an intended wording change with
+  `UPDATE_GOLDEN=1 PYTHONUTF8=1 .venv/Scripts/python.exe -m pytest tests/golden`.
+- Milestone checklist: `docs/04-implementation-plan.md`.
 
 ## Docs (read in this order when starting cold)
 | Doc | Use it for |
@@ -35,7 +39,14 @@ engagement compulsion. Docs are the spec; code implements them. When code diverg
 uv venv .venv && uv pip install --python .venv/Scripts/python.exe -e ".[dev]"
 .venv/Scripts/python.exe -m ruff check .
 .venv/Scripts/python.exe -m mypy
-.venv/Scripts/python.exe -m pytest -q
+.venv/Scripts/python.exe -m pytest -q            # default: excludes llm/slow/soak markers
+.venv/Scripts/python.exe -m pytest -q -m slow    # restart recovery (spawns servers)
+PYTHONUTF8=1 .venv/Scripts/python.exe scripts/soak.py --minutes 45   # against a running bot
+PYTHONUTF8=1 .venv/Scripts/python.exe -m eval.harness --reply-turns 3  # judge needs JUDGE_LLM_API_KEY
+# run the bot (1 worker; state in data/vera.db)
+.venv/Scripts/python.exe -m vera.main
+# official simulator via wrapper (non-scoring scenarios need no key)
+.venv/Scripts/python.exe scripts/run_simulator.py --scenario all
 # regenerate the expanded dataset (PYTHONUTF8 is required on Windows)
 PYTHONUTF8=1 python reference/challenge/dataset/generate_dataset.py \
   --seed-dir reference/challenge/dataset --out reference/challenge/expanded

@@ -117,9 +117,10 @@ actions; two ticks never share a `conversation_id`; `/v1/reply` with only `conve
 teardown → counts 0.
 
 ## 4. Property-based tests (hypothesis)
-Strategy: generate random stores (1–10 merchants across the 5 categories, 0–5 customers each, 0–30 triggers of
-any known or random kind, random opt-out/auto-reply flags) and random tick sequences (1–6 ticks, random
-subsets as `available_triggers`, including unknown ids). Fake LLM returns valid JSON instantly.
+Strategy: the real expanded dataset (all 100 triggers) with random opt-out flags on up to 8 merchants and
+random tick sequences (1–6 ticks of up to 40 ids drawn from the triggers plus random unknown strings), run
+through the deterministic composer. P7 uses random push sequences over a small key space. 40 examples per
+property (`tests/property/test_planner_props.py`).
 - **P1** every tick returns ≤ 20 actions.
 - **P2** no `conversation_id` appears twice across all ticks of a run.
 - **P3** no `suppression_key` is sent twice across a run.
@@ -135,11 +136,11 @@ subsets as `available_triggers`, including unknown ids). Fake LLM returns valid 
 from the pairs — `research_digest` (trg_001), `renewal_due` (trg_005), `review_theme_emerged` (trg_011),
 `seasonal_perf_dip` (trg_014), `supply_alert` (trg_018), `trial_followup` (trg_017),
 `wedding_package_followup` (trg_007), `winback_eligible` (trg_009).
-- Snapshot per case in `tests/golden/snapshots/<case>.json`: `{body, cta, send_as, template_name,
-  template_params, suppression_key, rationale, prompt_version, fact_ids_seen}`.
-- Two modes: `fallback` (LLM disabled — must pass at M3) and `llm` (cached outputs — M4).
-- Any snapshot diff fails the test; updating requires `pytest --update-golden` and a human read of the diff
-  (commit message says which cases changed and why).
+- One snapshot file, `tests/golden/snapshots.json`, keyed by case id: `{trigger_id, cta, send_as, body}` (or
+  `{skip: reason}`).
+- Mode: `fallback` (LLM disabled). An `llm` mode over cached outputs is added once real-model runs exist.
+- Any snapshot diff fails the test; updating requires `UPDATE_GOLDEN=1 pytest tests/golden` and a human read of
+  the diff (commit message says which cases changed and why).
 - Every golden body must pass the grounding audit and the case-study similarity check.
 
 ## 6. Grounding audit
@@ -255,8 +256,7 @@ Closer to the real judge than the simulator.
 ## 13. Score tracking
 | Date | Commit | prompt_version | Sim avg (/50) | Harness avg (/50) | Grounding findings | p99 tick (s) | Notes |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
-| | | | | | | | |
+| 2026-09-27 | ba34655+M7 | composer_v1 (LLM off) | n/a (no judge key) | n/a (no judge key) | 0 / 36 actions | 0.05 | Offline harness: 38 cases → 36 actions (2 held by per-merchant cap), 0 shape errors, 0 URLs, 0 repeats, max case-study similarity 0.381; simulator `all` scenarios all PASS |
 | | | | | | | | |
 
 ## 14. Commands
